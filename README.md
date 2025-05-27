@@ -8,8 +8,17 @@ Research paper citations:
 ```
 @article{Kapoor2025Surrogate,
     author = {Kapoor, Ankush and Ray, Tapabrata and Jepson, Nigel and Beier, Susann},
-    title = "{A Surrogate-Assisted Multi-Concept Optimization Framework for Real-World Engineering Design}",
-    journal = {Journal of Mechanical Design - Accepted 03/2025 (In Print)}
+    title = {A Surrogate-Assisted Multiconcept Optimization Framework for Real-World Engineering Design},
+    journal = {Journal of Mechanical Design},
+    volume = {147},
+    number = {12},
+    pages = {121701},
+    year = {2025},
+    month = {05},
+    issn = {1050-0472},
+    doi = {10.1115/1.4068404},
+    url = {https://doi.org/10.1115/1.4068404},
+    eprint = {https://asmedigitalcollection.asme.org/mechanicaldesign/article-pdf/147/12/121701/7459273/md-24-1837.pdf},
 }
 ```
 
