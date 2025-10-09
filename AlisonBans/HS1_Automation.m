@@ -52,20 +52,27 @@ x18_max = 0.066;
 
 % Concatenate the different variable values together
 design_space = [x1, x5, x17, x18];
+labeled_space = [design_space, zeros(N,1)];
 
 % ----------------------------------------------------------------------------
 % 3. Iterate over the different design definitions
 % ----------------------------------------------------------------------------
 
 % Add hs1 folder in the path and call the function for stent generation
-hs1_folder = fullfile(pwd, '...', 'HS1');
+hs1_folder = fullfile(pwd, 'HS1');
 addpath(hs1_folder);
 for design_nb = 1:Number
     design_def = design_space(design_nb,:);
     [x(1), x(5), x(17), x(18)] = design_def;
-    Main(x);
+    geometry_success = Main(x);
+    labeled_space(design_nb, end) = geometry_success;
 end
+% Convert matrix to table
+labeled_space_csv = array2table(labeled_space, 'VariableNames', {'NUS', 'CW', 'SW', 'ST', 'Label'});
+
+% Save table as CSV
+writetable(labeled_space_csv, 'labeled_design_space.csv');
 
 rmpath(hs1_folder);
 
-% ADD automated labelling. 
+% Verify automated labelling. 
