@@ -2,7 +2,7 @@
 % Author:           Alison Bans
 % Last Update:      09-10-2025
 % Description:      Automated generation of HS1 stent designs based on design 
-                    variables x values
+%                   variables x values
 %                   Randomised variable assignment using latin hypercube sampling.
 % Acknowledgement:  Based on work from Ankush Kapoor
 % ----------------------------------------------------------------------------
@@ -39,20 +39,28 @@ x(16) = 1.79921;% ww_connector(4)
 % ----------------------------------------------------------------------------
 
 % Define design space
-N = 0;
+N = 2;
 x1_levels = [17,18,19,20,21];
+x1_default =19;
 x5_min = 0.09;
 x5_max = 0.11;
+x5_default = 0.1;
 x17_min = 0.054;
 x17_max = 0.066;
+x17_default = 0.06;
 x18_min = 0.054;
 x18_max = 0.066;
+x18_default =0.06;
 
 % Randomly select values following latin hypercube space sampling
-
+x1 = x1_levels(1);
+x5 = x5_max;
+x17 = x17_max;
+x18 = x18_max;
 % Concatenate the different variable values together
-design_space = [x1, x5, x17, x18];
+design_space = [x1 x5 x17 x18; x1_default x5_default x17_default x18_default];
 labeled_space = [design_space, zeros(N,1)];
+disp(labeled_space);
 
 % ----------------------------------------------------------------------------
 % 3. Iterate over the different design definitions
@@ -61,9 +69,12 @@ labeled_space = [design_space, zeros(N,1)];
 % Add hs1 folder in the path and call the function for stent generation
 hs1_folder = fullfile(pwd, 'HS1');
 addpath(hs1_folder);
-for design_nb = 1:Number
+for design_nb = 1:N
     design_def = design_space(design_nb,:);
-    [x(1), x(5), x(17), x(18)] = design_def;
+    x(1)= design_def(1);
+    x(5)= design_def(2);
+    x(17)= design_def(3);
+    x(18) = design_def(4);
     geometry_success = Main(x);
     labeled_space(design_nb, end) = geometry_success;
 end

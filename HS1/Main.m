@@ -62,7 +62,7 @@ try
     x_rep = Repair(x([1:2,4:7]), xrep_old);
     x([3,21:23]) = x_rep;
 catch
-    error('Error:HS1', 'Repair failed for HS1 stent. Kindly try with different variables');
+    %error('Error:HS1', 'Repair failed for HS1 stent. Kindly try with different variables');
     status = 0;
     return
 end
@@ -85,7 +85,7 @@ try
         end
     end
 catch
-    error('Error:HS2', "HS2 stent geometry construction failed. Kindly try with different design variables")
+    %error('Error:HS2', "HS2 stent geometry construction failed. Kindly try with different design variables")
     status = 0;
     return
 end

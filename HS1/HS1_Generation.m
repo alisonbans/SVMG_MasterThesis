@@ -400,8 +400,11 @@ close all;
 
 % Saving 3D stent files
 file_name = "stent.SLDPRT";
+file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f.SLDPRT', NS, wc, strut_width, strut_thickness);
 ps_file_name = "stent.x_t";
+ps_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f.x_t', NS, wc, strut_width, strut_thickness);
 stl_file_name = "stent.STL";
+stl_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f.STL', NS, wc, strut_width, strut_thickness);
 fullpath_sw = fullfile(result_location,file_name);
 py.sld_interface.save_sw_file(fullpath_sw);
 fullpath_ps = fullfile(result_location,ps_file_name);
