@@ -8,7 +8,7 @@ import math
 
 def startSW():
     ## Starts Solidworks
-    SW_PROCESS_NAME = r'C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS/SLDWORKS.exe'
+    SW_PROCESS_NAME = r'C:/Program Files/SOLIDWORKS Corp/SOLIDWORKS 2024/SOLIDWORKS/SLDWORKS.exe'
     sb.Popen(SW_PROCESS_NAME)
 
 def shutSW():
@@ -500,7 +500,7 @@ def start():
     sw.SetUserPreferenceToggle(706, False)
 
 # Create a new part
-    swPartDoc = sw.NewDocument("C:\\ProgramData\\SolidWorks\\SOLIDWORKS 2024\\templates\\Part.prtdot",0,0,0)
+    swPartDoc = sw.NewDocument("C:\ProgramData\SolidWorks\SOLIDWORKS 2024\templates\Part.prtdot",0,0,0)
     if not swPartDoc:
         return "Failed to create a new part."
 
