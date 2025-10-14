@@ -1916,6 +1916,13 @@ end
 
 function [B] = NURBS_AB(ww,P,t,k,n, np_strut)
 % This sends ww which is the vector of variables sought
+
+% ww : NURBS weights
+% P : NURBS control geometry 
+% t : knot vector
+% k : order of the B-spline
+% n : number of control points
+% np_strut : number of points to sample along the curve
 w = [ww(1) ww(2) ww(3) ww(4) ww(4) ww(3) ww(2) ww(1)];
 u=linspace(min(t),max(t),np_strut);
 N = cell(n + k,k);
