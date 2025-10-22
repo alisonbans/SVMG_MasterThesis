@@ -400,11 +400,8 @@ close all;
 
 % Saving 3D stent files
 file_name = "stent.SLDPRT";
-file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f_CR%.4f.SLDPRT', NS, wc, strut_width, strut_thickness,crimped_radius);
 ps_file_name = "stent.x_t";
-ps_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f_CR%.4f.x_t', NS, wc, strut_width, strut_thickness,crimped_radius);
 stl_file_name = "stent.STL";
-stl_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f_CR%.4f.STL', NS, wc, strut_width, strut_thickness,crimped_radius);
 fullpath_sw = fullfile(result_location,file_name);
 py.sld_interface.save_sw_file(fullpath_sw);
 fullpath_ps = fullfile(result_location,ps_file_name);
@@ -1919,13 +1916,6 @@ end
 
 function [B] = NURBS_AB(ww,P,t,k,n, np_strut)
 % This sends ww which is the vector of variables sought
-
-% ww : NURBS weights
-% P : NURBS control geometry 
-% t : knot vector
-% k : order of the B-spline
-% n : number of control points
-% np_strut : number of points to sample along the curve
 w = [ww(1) ww(2) ww(3) ww(4) ww(4) ww(3) ww(2) ww(1)];
 u=linspace(min(t),max(t),np_strut);
 N = cell(n + k,k);
