@@ -31,6 +31,33 @@ def sw_to_step_file(sw_file_path, step_file_path):
     success = activeDoc.SaveAs3(step_file_path, 0, 2)
     sw.CloseDoc(activeDoc.GetTitle)
 
+def export_step_file_from_sldprt(sw_file_path, step_file_path):
+    global sw
+    sw.Visible = False
+    error = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+    warning = win32com.client.VARIANT(pythoncom.VT_BYREF | pythoncom.VT_I4, 0)
+    # Open the part
+    doc = sw.OpenDoc6(sw_file_path, 1, 0, "", error, warning)
+    if not doc:
+        print("Failed to open document.")
+        return
+    # Get the active document
+    activeDoc = sw.ActiveDoc
+    if not activeDoc:
+        print("No active document.")
+        return
+    # STEP export options (1 = STEP AP203, 2 = STEP AP214)
+    exportData = sw.GetExportFileData(1) # 1 = STEP export type
+    # SaveAs4 is needed for exporting with export data
+    success = activeDoc.Extension.SaveAs(step_file_path, 0, 2, exportData, error, warning)
+    if not success:
+        print("STEP export failed.")
+    #else:
+        #print(f"STEP file saved to: {step_file_path}")
+        # Close the document
+    sw.CloseDoc(activeDoc.GetTitle)
+    #print("Closed")
+
 def sw_to_ps_file(sw_file_path, ps_file_path):
     global sw
     sw.Visible = False
