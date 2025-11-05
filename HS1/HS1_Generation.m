@@ -408,12 +408,12 @@ stl_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f.STL', NS, wc, strut_wi
 step_file_name = sprintf('stent_NUS%d_CW%.4f_SW%.4f_ST%.4f.STEP', NS, wc, strut_width, strut_thickness);
 fullpath_sw = fullfile(result_location,file_name);
 py.sld_interface.save_sw_file(fullpath_sw);
-fullpath_ps = fullfile(result_location,ps_file_name);
-fullpath_stl = fullfile(result_location,stl_file_name);
+%fullpath_ps = fullfile(result_location,ps_file_name);
+%fullpath_stl = fullfile(result_location,stl_file_name);
 py.sld_interface.exit_sw();
 py.sld_interface.start();
-py.sld_interface.sw_to_ps_file(fullpath_sw, fullpath_ps);
-py.sld_interface.ps_to_stl(fullpath_ps,fullpath_stl);
+%py.sld_interface.sw_to_ps_file(fullpath_sw, fullpath_ps);
+%py.sld_interface.ps_to_stl(fullpath_ps,fullpath_stl);
 fullpath_step = fullfile(result_location,step_file_name);
 py.sld_interface.export_step_file_from_sldprt(fullpath_sw, fullpath_step);
 py.sld_interface.exit_sw();

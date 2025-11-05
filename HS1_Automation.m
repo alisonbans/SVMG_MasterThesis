@@ -39,10 +39,10 @@ x(16) = 1.79921;% ww_connector(4)
 % -------------------------------------------------------------------------
 
 % Define design space -----------------------------------------------------
-N = 1; %30;
+N = 100;
 x1_levels = [15,16,17,18,19,20,21,22,23,24,25];
 x17_min = 0.05;
-x17_max = 0.1;
+x17_max = 0.08;
 x18_min = 0.05;
 x18_max = 0.07;
 
@@ -59,7 +59,9 @@ x18 = x18_min + lhs_matrix(:,2)*(x18_max-x18_min);
 % Ensure column vectors
 x1 = x1(:);
 x17 = x17(:);
+x17 = round(x17, 4);
 x18 = x18(:);
+x18 = round(x18, 4);
 design_space = [x1 x17 x18];
 
 % Visualise the sampling space to ensure correct implementation -----------
@@ -74,9 +76,11 @@ title('Pairwise Scatter Plots of Design Space')
 
 % REMOVE THIS -------------------------------------------------------------
 %x1_default x2_default x5_default x17_default x18_default;
-design_space = [19 0.065 0.06];
-% -------------------------------------------------------------------------
+%values = 16:2:22;
+%design_space = [17, 0.052674418, 0.051782946];
 
+% -----------------------------------------------------------------------
+%N=1;
 labeled_space = [design_space, NaN(N,1)];
 disp(labeled_space);
 
@@ -88,6 +92,7 @@ disp(labeled_space);
 hs1_folder = fullfile(pwd, 'HS1');
 addpath(hs1_folder);
 for design_nb = 1:N
+    disp(design_nb);
     design_def = design_space(design_nb,:);
     x(1)= design_def(1);
     x(17)= design_def(2);
