@@ -35,7 +35,7 @@ def artery_to_surface():
     bpy.context.active_object.name = "STENT"
     for obj in bpy.context.selected_objects:
         if obj != bpy.context.active_object:
-            obj.name = "ARTERY"
+            obj.name = "ARTERY_STENTED"
 
 
     # Delete artery extermities
