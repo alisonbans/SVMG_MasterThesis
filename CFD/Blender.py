@@ -1,4 +1,5 @@
 import bpy
+import os
 def artery_to_surface():
     if not bpy.context.active_object is None :
         bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
@@ -53,7 +54,6 @@ def artery_to_surface():
         
     bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=735850)
     bpy.ops.mesh.delete(type='FACE')
-
 def artery_elongation():
     artery = bpy.data.objects["ARTERY"]
     bpy.context.view_layer.objects.active = artery
@@ -165,7 +165,6 @@ def artery_elongation():
         # Rename the new object
         new_obj = [o for o in bpy.context.selected_objects if o.name != obj.name][0]
         new_obj.name = new_obj_name
-
 def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     obj = bpy.data.objects[obj_name]
     obj.select_set(True)
@@ -207,9 +206,47 @@ def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     new_obj.name = new_obj_name
     #bpy.ops.mesh.edge_face_add()
     #bpy.ops.object.mode_set(mode='OBJECT')
+def export():
+    # Set your export directory
+    export_dir = "C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input"
 
 
-artery_to_surface()
-artery_elongation()
-select_and_fill_loop("PROXIMAL_EXT", 344, "INLET")
-select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
+    # Create the directory if it doesn't exist
+    if not os.path.exists(export_dir):
+        os.makedirs(export_dir)
+
+    # Deselect everything first
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # Loop through all mesh objects in the scene
+    for obj in bpy.data.objects:
+        if obj.type == 'MESH':
+            # Select and activate the object
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+
+            # Define export path
+            export_path = os.path.join(export_dir, f"{obj.name}.stl")
+
+            # Export as ASCII STL
+            bpy.ops.export_mesh.stl(
+                filepath=export_path,
+                use_selection=True,
+                ascii=True,
+                use_mesh_modifiers=True,
+                global_scale=1.0,
+                axis_forward='-Z',
+                axis_up='Y'
+            )
+
+            # Deselect the object after export
+            obj.select_set(False)
+
+def main():
+    artery_to_surface()
+    artery_elongation()
+    select_and_fill_loop("PROXIMAL_EXT", 344, "INLET")
+    select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
+    export()
+
+
