@@ -1,0 +1,79 @@
+# encoding: utf-8
+# ANSYS Workbench Journal File (simplified)
+SetScriptVersion(Version="24.2.133")
+
+# --------------------------
+# Paths (modify these as needed)
+# --------------------------
+BASE_DIR = r"C:\Users\z5713258\SVMG_MasterThesis\CFD"
+MESH_FILE = BASE_DIR + r"\CFD_STL_input\EXAMPLE2.msh"
+CCL_STEADY = "C:\Users\z5713258\SVMG_MasterThesis\CFD\STEADY.ccl"
+CCL_TRANS1 = BASE_DIR + r"\TRANS1.ccl"
+CCL_TRANS2 = BASE_DIR + r"\TRANS2.ccl"
+DEF_STEADY = BASE_DIR + r"\INP\NUS19_SW60_ST60\STEADY.def"
+DEF_TRANS1 = BASE_DIR + r"\INP\NUS19_SW60_ST60\TRANS1.def"
+DEF_TRANS2 = BASE_DIR + r"\INP\NUS19_SW60_ST60\TRANS2.def"
+
+# --------------------------
+# Create CFX Template and Systems
+# --------------------------
+template = GetTemplate(TemplateName="Fluid Flow", Solver="CFX")
+
+# --- STEADY system ---
+steady_system = template.CreateSystem()
+steady_system.DisplayText = "STEADY"
+
+steady_mesh = steady_system.GetContainer(ComponentName="Mesh")
+steady_mesh.Import(FilePath=MESH_FILE, MeshType="FLUENT")
+
+steady_setup = steady_system.GetContainer(ComponentName="Setup")
+steady_setup.Edit()
+steady_setup.SendCommand(f">importccl filename={CCL_STEADY}, mode=replace, autoLoadLibrary=none")
+steady_setup.Exit()
+
+steady_solution = steady_system.GetContainer(ComponentName="Solution")
+steady_solution.SetExecutionControl(CCL=f"&replace SIMULATION CONTROL:\n  RUN DEFINITION:\n    Solver Input File = {DEF_STEADY}\n  END\nEND")
+
+# --- TRANS1 system (share mesh & STEADY results) ---
+imported_mesh_steady = steady_system.GetComponent(Name="Imported Mesh")
+solution_template = GetComponentTemplate(Name="CFXResultsTemplate")
+
+trans1_system = template.CreateSystem(
+    ComponentsToShare=[imported_mesh_steady],
+    DataTransferFrom=[Set(FromComponent=steady_solution, TransferName=None, ToComponentTemplate=solution_template)],
+    Position="Right",
+    RelativeTo=steady_system
+)
+trans1_system.DisplayText = "TRANS1"
+
+trans1_setup = trans1_system.GetContainer(ComponentName="Setup")
+trans1_setup.Edit()
+trans1_setup.SendCommand(f"importccl filename={CCL_TRANS1}, mode=replace, autoLoadLibrary=none")
+trans1_setup.Exit()
+
+trans1_solution = trans1_system.GetContainer(ComponentName="Solution")
+trans1_solution.SetExecutionControl(CCL=f"&replace SIMULATION CONTROL:\n  RUN DEFINITION:\n    Solver Input File = {DEF_TRANS1}\n  END\nEND")
+
+# --- TRANS2 system (share mesh from TRANS1) ---
+imported_mesh_trans1 = trans1_system.GetComponent(Name="Imported Mesh")
+
+trans2_system = template.CreateSystem(
+    ComponentsToShare=[imported_mesh_trans1],
+    Position="Right",
+    RelativeTo=trans1_system
+)
+trans2_system.DisplayText = "TRANS2"
+
+trans2_setup = trans2_system.GetContainer(ComponentName="Setup")
+trans2_setup.Edit()
+trans2_setup.SendCommand(f"importccl filename={CCL_TRANS2}, mode=replace, autoLoadLibrary=none")
+trans2_setup.Exit()
+
+trans2_solution = trans2_system.GetContainer(ComponentName="Solution")
+trans2_solution.SetExecutionControl(CCL=f"&replace SIMULATION CONTROL:\n  RUN DEFINITION:\n    Solver Input File = {DEF_TRANS2}\n  END\nEND")
+
+# --------------------------
+# Save Workbench project
+# --------------------------
+Save(Overwrite=True)
+print("✅ Simplified CFX project setup complete.")
