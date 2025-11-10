@@ -1,6 +1,7 @@
 import bpy
 import os
-def artery_to_surface():
+def artery_to_surface(stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Results/BalloonArteryCriExp3Nov.stl"):
+    print('1')
     if not bpy.context.active_object is None :
         bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -9,7 +10,6 @@ def artery_to_surface():
 
 
     # Import the STL file
-    stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Results/BalloonArteryCriExp3Nov.stl"
     bpy.ops.import_mesh.stl(filepath=stl_path)
 
     # Get the imported object (assumes it’s the last selected object)
@@ -35,13 +35,13 @@ def artery_to_surface():
     bpy.context.active_object.name = "STENT"
     for obj in bpy.context.selected_objects:
         if obj != bpy.context.active_object:
-            obj.name = "ARTERY_STENTED"
+            obj.name = "STENTED"
 
 
     # Delete artery extermities
     for face_index in [281433, 23899]:
         bpy.ops.object.mode_set(mode='OBJECT')
-        artery = bpy.data.objects["ARTERY"]
+        artery = bpy.data.objects["STENTED"]
         bpy.context.view_layer.objects.active = artery
         obj.select_set(True)
         for poly in obj.data.polygons:
@@ -55,7 +55,8 @@ def artery_to_surface():
     bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=735850)
     bpy.ops.mesh.delete(type='FACE')
 def artery_elongation():
-    artery = bpy.data.objects["ARTERY"]
+    print('2')
+    artery = bpy.data.objects["STENTED"]
     bpy.context.view_layer.objects.active = artery
     artery.select_set(True)
     bpy.ops.object.mode_set(mode='EDIT')
@@ -71,10 +72,10 @@ def artery_elongation():
     )
     bpy.ops.mesh.loop_to_region()
     bpy.ops.mesh.separate(type='SELECTED')
-    obj = bpy.data.objects["ARTERY.001"]
+    obj = bpy.data.objects["STENTED.001"]
     obj.name = "PROXIMAL"
 
-    artery = bpy.data.objects["ARTERY"]
+    artery = bpy.data.objects["STENTED"]
     bpy.context.view_layer.objects.active = artery
     artery.select_set(True)
     bpy.ops.object.mode_set(mode='EDIT')
@@ -90,7 +91,7 @@ def artery_elongation():
     )
     bpy.ops.mesh.loop_to_region()
     bpy.ops.mesh.separate(type='SELECTED')
-    obj = bpy.data.objects["ARTERY.001"]
+    obj = bpy.data.objects["STENTED.001"]
     obj.name = "DISTAL"
 
     edges_to_extrude = [
@@ -166,6 +167,7 @@ def artery_elongation():
         new_obj = [o for o in bpy.context.selected_objects if o.name != obj.name][0]
         new_obj.name = new_obj_name
 def select_and_fill_loop(obj_name, edge_index, new_obj_name):
+    print('3')
     obj = bpy.data.objects[obj_name]
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
@@ -206,15 +208,14 @@ def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     new_obj.name = new_obj_name
     #bpy.ops.mesh.edge_face_add()
     #bpy.ops.object.mode_set(mode='OBJECT')
-def export():
+def export(case = 'NUS19_SW60_ST60'):
     # Set your export directory
     export_dir = "C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input"
-
-
+    case_dir = os.path.join(export_dir, case)
     # Create the directory if it doesn't exist
-    if not os.path.exists(export_dir):
-        os.makedirs(export_dir)
-
+    if not os.path.exists(case_dir):
+        os.makedirs(case_dir)
+    
     # Deselect everything first
     bpy.ops.object.select_all(action='DESELECT')
 
@@ -226,7 +227,7 @@ def export():
             bpy.context.view_layer.objects.active = obj
 
             # Define export path
-            export_path = os.path.join(export_dir, f"{obj.name}.stl")
+            export_path = os.path.join(case_dir, f"{obj.name}.stl")
 
             # Export as ASCII STL
             bpy.ops.export_mesh.stl(
@@ -249,4 +250,5 @@ def main():
     select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
     export()
 
-
+if __name__ == "__main__":
+    main()

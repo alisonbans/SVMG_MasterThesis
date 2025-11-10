@@ -9,16 +9,15 @@ Last update:        November 6th 2025.
 Code description:   
 """
 start_time = time.time()
-# 0. Preliminary work, general definitions -----------------------------------------------------------------------------
-
 # Set working directory
-command_1 = r'cd C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion'
+ResultsMainDir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
+os.makedirs(ResultsMainDir, exist_ok=True)
+command_1 = r'cd C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
 proc_1 = subprocess.Popen(command_1, shell=True)
 
 # Set up results directory
-ResultsMainDir = r'cd C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion'
 stent_step_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\HS1_Results'
-# sh_template = r"C:\Users\you\Documents\run_job.sh"
+sh_template = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\job-FEA.sh'
 i = 1
 for filename in os.listdir(stent_step_dir):
     if filename.endswith(".STEP"):
@@ -41,20 +40,20 @@ for filename in os.listdir(stent_step_dir):
 
 
         #print(job_name)
-        working_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion'
-        script_path = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion.py'
+        working_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
+        script_path = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpFunctions.py'
         command_2 = f'abaqus cae noGUI="{script_path}" -- "{stent_location},{job_name},{job_name_full}"'
 
         #command_2 = f'abaqus cae script=FreeExpansion.py -- {stent_location}'
         proc_2 = subprocess.Popen(command_2, shell=True, cwd=working_dir)
         proc_2.wait()
-        """
-            target_sh = os.path.join(step_folder, f"run_{i}.sh")
-            with open(sh_template, 'r') as file:
-                content = file.read()
-            content = content.replace("<POT2>", fe_name)
-            with open(target_sh, 'w') as file:
-                file.write(content)"""
+
+        target_sh = os.path.join(ResultsMainDir, f"run_{nus}_SW{sw_um}_ST{st_um}.sh")
+        with open(sh_template, 'r') as file:
+            content = file.read()
+        content = content.replace("<POT2>", job_name_full)
+        with open(target_sh, 'w') as file:
+            file.write(content)
             
         i +=1
     #if i == 2:
