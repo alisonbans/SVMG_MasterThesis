@@ -8,7 +8,7 @@ system1 = template1.CreateSystem()
 system1.DisplayText = "STEADY"
 mesh1 = system1.GetContainer(ComponentName="Mesh")
 mesh1.Import(
-    FilePath="C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input/EXAMPLE2.msh",
+    FilePath="{{MESH_PATH}}",
     MeshType="FLUENT")
 setup1 = system1.GetContainer(ComponentName="Setup")
 setup1.Edit()
@@ -38,6 +38,7 @@ system2 = template1.CreateSystem(
     ComponentsToShare=[importedMeshComponent1],
     Position="Right",
     RelativeTo=system1)
+system2.DisplayText = "TRANS1"
 setup2 = system2.GetContainer(ComponentName="Setup")
 setup2.Edit()
 setup2.SendCommand(Command="""VIEW:View 1
@@ -61,12 +62,12 @@ END
 >delete /FLOW:Flow Analysis 1""")
 setup2.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS1.ccl, mode = replace, autoLoadLibrary = none")
 setup2.Exit()
-system2.DisplayText = "TRANS1"
 importedMeshComponent2 = system2.GetComponent(Name="Imported Mesh")
 system3 = template1.CreateSystem(
     ComponentsToShare=[importedMeshComponent2],
     Position="Right",
     RelativeTo=system2)
+system3.DisplayText = "TRANS2"
 setup3 = system3.GetContainer(ComponentName="Setup")
 setup3.Edit()
 setup3.SendCommand(Command="""VIEW:View 1
@@ -90,8 +91,7 @@ END
 >delete /FLOW:Flow Analysis 1""")
 setup3.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS2.ccl, mode = replace, autoLoadLibrary = none")
 setup3.Exit()
-system3.DisplayText = "TRANS2"
-Save(FilePath = "C:/Users/z5713258/SVMG_MasterThesis/CFD/Example11Nov.wbpj", Overwrite=True)
+Save(FilePath = "{{WBPJ_FILE_PATH}}", Overwrite=True)
 solution1 = system1.GetContainer(ComponentName="Solution")
 solution1.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
   EXECUTION CONTROL:
@@ -129,7 +129,7 @@ solution1.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
     END
     RUN DEFINITION:
       Run Mode = Full
-      Solver Input File = C:\Users\z5713258\SVMG_MasterThesis\CFD\EXAMPLE11Nov_files\dp0\CFX\CFX\STEADY.def
+      Solver Input File = {{DEF_PATH_STEADY}}
     END
     SOLVER STEP CONTROL:
       Runtime Priority = Standard
@@ -183,7 +183,7 @@ solution2.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
     END
     RUN DEFINITION:
       Run Mode = Full
-      Solver Input File = C:\Users\z5713258\SVMG_MasterThesis\CFD\EXAMPLE11Nov2_files\dp0\CFX-1\CFX\Fluid Flow CFX.def
+      Solver Input File = {{DEF_PATH_TRANS1}}
     END
     SOLVER STEP CONTROL:
       Runtime Priority = Standard
@@ -237,7 +237,7 @@ solution3.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
     END
     RUN DEFINITION:
       Run Mode = Full
-      Solver Input File = C:\Users\z5713258\SVMG_MasterThesis\CFD\EXAMPLE11Nov_files\dp0\CFX-2\CFX\Fluid Flow CFX.def
+      Solver Input File = {{DEF_PATH_TRANS2}}
     END
     SOLVER STEP CONTROL:
       Runtime Priority = Standard
@@ -253,5 +253,14 @@ solution3.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
   END
 END
 """)
+
+solution1.Exit()
+solution1.Run()
+
+solution2.Exit()
+solution2.Run()
+
 solution3.Exit()
+solution3.Run()
+
 Save(Overwrite=True)
