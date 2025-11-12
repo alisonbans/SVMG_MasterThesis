@@ -8,8 +8,6 @@ import part
 import material
 import assembly
 import step
-import interaction
-import load
 import mesh
 import optimization
 import job
@@ -20,6 +18,7 @@ import displayGroupOdbToolset as dgo
 import connectorBehavior
 import step
 import math
+from abaqus import session
 # Balloon ----------------------------------------------------------------------------- 
 def Balloon(model):
     # Geometry
@@ -3252,7 +3251,87 @@ def EnergyRatio(obd_location = 'D:/Alison/alison-crimpexp.odb'):
     c1 = session.Curve(xyData=xy3)
     chart.setValues(curvesToPlot=(c1, ), )
     session.charts[chartName].autoColor(lines=True, symbols=True)
- 
+
+
+def EnergyRatios(odb_location = 'C:/Users/z5713258/AbaqusWD/MOD/alison-dt5e06-MOD.odb'):
+    session.mdbData.summary()
+    o1 = session.openOdb(
+        name=odb_location)
+    session.upgradeOdb("C:/Users/z5713258/AbaqusWD/MOD/alison-dt5e06-MOD.odb", 
+        "C:/Users/z5713258/AppData/Local/Temp/alison-dt5e06-MOD1762901164.254.odb", 
+        )
+    o7 = session.openOdb(
+        'C:/Users/z5713258/AppData/Local/Temp/alison-dt5e06-MOD1762901164.254.odb')
+    odb = session.odbs['C:/Users/z5713258/AppData/Local/Temp/alison-dt5e06-MOD1762901164.254.odb']
+    session.XYDataFromHistory(name='ALLIE PI: ARTERY-1 ELSET SET-ALL-1', odb=odb, 
+        outputVariableName='Internal energy: ALLIE PI: ARTERY-1 in ELSET SET-ALL', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    session.XYDataFromHistory(name='ALLIE PI: BALLOON-1 ELSET SET-ELE-1', odb=odb, 
+        outputVariableName='Internal energy: ALLIE PI: BALLOON-1 in ELSET SET-ELE', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    session.XYDataFromHistory(name='ALLIE PI: STENT-1 ELSET SET-ALL-1', odb=odb, 
+        outputVariableName='Internal energy: ALLIE PI: STENT-1 in ELSET SET-ALL', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    session.XYDataFromHistory(name='ALLKE PI: ARTERY-1 ELSET SET-ALL-1', odb=odb, 
+        outputVariableName='Kinetic energy: ALLKE PI: ARTERY-1 in ELSET SET-ALL', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    session.XYDataFromHistory(name='ALLKE PI: BALLOON-1 ELSET SET-ELE-1', odb=odb, 
+        outputVariableName='Kinetic energy: ALLKE PI: BALLOON-1 in ELSET SET-ELE', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    session.XYDataFromHistory(name='ALLKE PI: STENT-1 ELSET SET-ALL-1', odb=odb, 
+        outputVariableName='Kinetic energy: ALLKE PI: STENT-1 in ELSET SET-ALL', 
+        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
+        __linkedVpName__='Viewport: 1')
+    xy1 = session.xyDataObjects['ALLKE PI: STENT-1 ELSET SET-ALL-1']
+    xy2 = session.xyDataObjects['ALLIE PI: STENT-1 ELSET SET-ALL-1']
+    xy3 = 100*xy1/xy2
+    xy3.setValues(
+        sourceDescription='100*"ALLKE PI: STENT-1 ELSET SET-ALL-1" / "ALLIE PI: STENT-1 ELSET SET-ALL-1"')
+    tmpName = xy3.name
+    session.xyDataObjects.changeKey(tmpName, 'StentEnergyRatio')
+    xy1 = session.xyDataObjects['ALLKE PI: BALLOON-1 ELSET SET-ELE-1']
+    xy2 = session.xyDataObjects['ALLIE PI: BALLOON-1 ELSET SET-ELE-1']
+    xy3 = 100*xy1/xy2
+    xy3.setValues(
+        sourceDescription='100*"ALLKE PI: BALLOON-1 ELSET SET-ELE-1" / "ALLIE PI: BALLOON-1 ELSET SET-ELE-1"')
+    tmpName = xy3.name
+    session.xyDataObjects.changeKey(tmpName, 'BalloonEnergyRatio')
+    xy1 = session.xyDataObjects['ALLKE PI: ARTERY-1 ELSET SET-ALL-1']
+    xy2 = session.xyDataObjects['ALLIE PI: ARTERY-1 ELSET SET-ALL-1']
+    xy3 = 100*xy1/xy2
+    xy3.setValues(
+        sourceDescription='100*"ALLKE PI: ARTERY-1 ELSET SET-ALL-1" / "ALLIE PI: ARTERY-1 ELSET SET-ALL-1"')
+    tmpName = xy3.name
+    session.xyDataObjects.changeKey(tmpName, 'ArteryEnergyRatio')
+    xyp = session.XYPlot('XYPlot-1')
+    chartName = xyp.charts.keys()[0]
+    chart = xyp.charts[chartName]
+    xy1 = session.xyDataObjects['StentEnergyRatio']
+    c1 = session.Curve(xyData=xy1)
+    chart.setValues(curvesToPlot=(c1, ), )
+    session.charts[chartName].autoColor(lines=True, symbols=True)
+    session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+    session.xyPlots[session.viewports['Viewport: 1'].displayedObject.name].setValues(
+        transform=(359.658, 0, 0, -0.320262, 0, 1.06, 0, 0.0400125, 0, 0, 1.06, 
+        0, 0, 0, 0, 1))
+    session.charts['Chart-1'].axes2[0].axisData.setValues(maxValue=5, 
+        maxAutoCompute=False)
+    session.charts['Chart-1'].axes2[0].axisData.setValues(maxValue=5, 
+        maxAutoCompute=False)
+    session.charts['Chart-1'].fitCurves(fitAxes1=False, fitAxes2=True)
+    session.xyPlots[session.viewports['Viewport: 1'].displayedObject.name].setValues(
+        transform=(0.770719, 0, 0, -0.144561, 0, 0.00214292, 0, -136.33, 0, 0, 
+        0.00214292, 0, 0, 0, 0, 1))
+    session.charts['Chart-1'].fitCurves(fitAxes1=False, fitAxes2=True)
+    session.charts['Chart-1'].fitCurves(fitAxes1=True, fitAxes2=False)
+
+
+
 def AndreaRatioEnergy():
 
     session.viewports['Viewport: 1'].enableMultipleColors()
