@@ -6,27 +6,22 @@ import displayGroupOdbToolset as dgo
 from abaqus import session
 import shutil
 import subprocess
+import os
 
-#import pandas as pd
-def importODB(odb_location='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb'):
-    #from abaqus import session
-    #session.mdbData.summary()
-    #o1 = session.openOdb(
-    #    name='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb', 
-    #    readOnly=False)
-    #session.viewports['Viewport: 1'].setValues(displayedObject=o1)
-    #from  abaqus import session
-    #session.upgradeOdb(
-    #    "C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06-old.odb", 
-    #    "C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb", )
+def importODB(case_folder,odb_name):
+    old_odb = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\BalloonExpansion\Results\OLD\{odb_name}"
+    new_job = rf"{case_folder}\{odb_name}"
+    cmd = f'abaqus upgrade -job {new_job} -odb "{old_odb}"'
+    os.system(cmd)  
     from  abaqus import session
     session.mdbData.summary()
     o1 = session.openOdb(
-        name='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb', 
+        name=new_job, 
         readOnly=False)
     session.viewports['Viewport: 1'].setValues(displayedObject=o1)
-def EnergyRatios(odb_location='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb',
-                 output_path='C:/Users/z5713258/SVMG_MasterThesis/FEA/Results/NUS19_SW60_ST60'):
+
+def EnergyRatios(case_folder,odb_name):
+    odb_location = rf"{case_folder}\{odb_name}"
     odb = session.odbs[odb_location]
     # Extract XY data for Internal and Kinetic energy
     components = {
@@ -76,17 +71,17 @@ def EnergyRatios(odb_location='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriEx
         vp.setValues(displayedObject=xyp)
 
         # Save plot as PNG
-        file_name = os.path.join(output_path, f"{ratio_name}.png")
+        file_name = os.path.join(case_folder, f"{ratio_name}.png")
         vp.viewportAnnotationOptions.setValues(triad=OFF, title=OFF)
-        vp.view.setValues(width=1920, height=1080)  # set the viewport size
+        vp.view.setValues(width=3840, height=2160)
 
         session.printOptions.setValues(vpBackground=OFF)
         session.printToFile(fileName=file_name, format=PNG, canvasObjects=(vp,))
 
         print(f"Saved plot: {file_name}")
-    odb.close()
-    print(f"Energy ratio plots saved in: {output_path}")
-def writeCSV(step,odb_location='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriExp3Nov7e06.odb',output_path='C:/Users/z5713258/SVMG_MasterThesis/FEA/Results/NUS19_SW60_ST60'):
+    
+def writeCSV(case_folder, odb_name):
+    odb_location = rf"{case_folder}\{odb_name}"
     session.mdbData.summary()
     o7 = session.openOdb(
         odb_location, 
@@ -96,21 +91,25 @@ def writeCSV(step,odb_location='C:/Users/z5713258/AbaqusWD/MOD/BalloonArteryCriE
     leaf = dgo.LeafFromElementSets(elementSets=("STENT-1.SET-ALL", ))
     session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
     odb = session.odbs[odb_location]
-    if step == 'Step-EXP':
-        file_name = os.path.join(output_path,'UExp.csv')
-        step_nb = 2
-        frame_nb = 20
-    elif step == 'Step-REL2':
-        file_name = os.path.join(output_path,'URel.csv')
-        step_nb = 3
-        frame_nb = 5
-    else: print('No step with such name')
-    session.fieldReportOptions.setValues(reportFormat=COMMA_SEPARATED_VALUES)
-    session.writeFieldReport(fileName=file_name, append=OFF, 
-        sortItem='Node Label', odb=odb, step=step_nb, frame=frame_nb, outputPosition=NODAL, 
-        variable=(('U', NODAL), ), stepFrame=SPECIFY)
-def diameter(step, case_folder='C:/Users/z5713258/SVMG_MasterThesis/FEA/Results/NUS19_SW60_ST60' ):
+    for step in ['Step-EXP', 'Step-REL2']:
+        if step == 'Step-EXP':
+            file_name = os.path.join(case_folder,'UExp.csv')
+            step_nb = 2
+            frame_nb = 20
+        elif step == 'Step-REL2':
+            file_name = os.path.join(case_folder,'URel.csv')
+            step_nb = 3
+            frame_nb = 5
+        else: print('No step with such name')
+        session.fieldReportOptions.setValues(reportFormat=COMMA_SEPARATED_VALUES)
+        session.writeFieldReport(fileName=file_name, append=OFF, 
+            sortItem='Node Label', odb=odb, step=step_nb, frame=frame_nb, outputPosition=NODAL, 
+            variable=(('U', NODAL), ), stepFrame=SPECIFY)
+    #odb.close()
+def diameter(step, case_folder):
 # --- Load node coordinates ---
+    import pandas as pd
+    import numpy as np
     if step == 'Step-EXP':
         file_path = os.path.join(case_folder, 'UExp.csv')
     elif step =='Step-REL2':
@@ -143,24 +142,23 @@ def diameter(step, case_folder='C:/Users/z5713258/SVMG_MasterThesis/FEA/Results/
     print(f"{step}: Approx. external diameter = {external_diameter:.8f} units")
 
     return diameter
-def RR_Diameter():
-    d_exp = diameter('Step-EXP')
-    d_rel = diameter('Step-REL2')
+def RR_Diameter(case_folder):
+    d_exp = diameter('Step-EXP', case_folder)
+    d_rel = diameter('Step-REL2', case_folder)
     d_shrinkage =d_exp-d_rel
+    print(case_folder)
     print(f'Diameter Shrinkage = {d_shrinkage}')
 
-def main(odb_location,output_path):
-    importODB(odb_location) 
-    EnergyRatios(odb_location, output_path)
-    writeCSV('Step-EXP')
-    writeCSV('Step-REL2')
-    #RR_Diameter()
+def main(case_folder,odb_name):
+    importODB(case_folder,odb_name) 
+    EnergyRatios(case_folder, odb_name)
+    writeCSV(case_folder, odb_name)
 
 if __name__ == "__main__":
     input = str(sys.argv[-1])
     input = input.split(',')
     if len(input) !=2:
         raise ValueError("Make sure your input variable contains stent location only.")
-    odb_location = input[0]
-    output_dir = input[1]
-    main(odb_location,output_dir)
+    case_folder = input[0]
+    odb_name = input[1]
+    main(case_folder,odb_name)
