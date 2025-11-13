@@ -163,4 +163,4 @@ if __name__ == "__main__":
         raise ValueError("Make sure your input variable contains stent location only.")
     odb_location = input[0]
     output_dir = input[1]
-    EnergyRatios(odb_location,output_dir)
+    main(odb_location,output_dir)

@@ -1,0 +1,257 @@
+# encoding: utf-8
+# 2024 R2
+SetScriptVersion(Version="24.2.133")
+template1 = GetTemplate(
+    TemplateName="Fluid Flow",
+    Solver="CFX")
+system1 = template1.CreateSystem()
+system1.DisplayText = "STEADY"
+mesh1 = system1.GetContainer(ComponentName="Mesh")
+mesh1.Import(
+    FilePath="C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input/EXAMPLE2.msh",
+    MeshType="FLUENT")
+setup1 = system1.GetContainer(ComponentName="Setup")
+setup1.Edit()
+setup1.SendCommand(Command="""VIEW:View 1
+  Camera Mode = User Specified
+  CAMERA:
+    Option = Pivot Point and Quaternion
+    Pivot Point = 7.0075e-06, 0.011, -1.12672e-05
+    Scale = 38.6809
+    Pan = 0, 0
+    Rotation Quaternion = 0.279848, -0.364705, -0.115917, 0.880476
+    
+  END
+
+END
+
+VIEW:View 1
+  Light Angle = 50, 110
+END
+
+> update
+>delete /FLOW:Flow Analysis 1""")
+setup1.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/STEADY.ccl, mode = replace, autoLoadLibrary = none")
+setup1.Exit()
+importedMeshComponent1 = system1.GetComponent(Name="Imported Mesh")
+system2 = template1.CreateSystem(
+    ComponentsToShare=[importedMeshComponent1],
+    Position="Right",
+    RelativeTo=system1)
+system2.DisplayText = "TRANS1"
+setup2 = system2.GetContainer(ComponentName="Setup")
+setup2.Edit()
+setup2.SendCommand(Command="""VIEW:View 1
+  Camera Mode = User Specified
+  CAMERA:
+    Option = Pivot Point and Quaternion
+    Pivot Point = 7.0075e-06, 0.011, -1.12672e-05
+    Scale = 38.6809
+    Pan = 0, 0
+    Rotation Quaternion = 0.279848, -0.364705, -0.115917, 0.880476
+    
+  END
+
+END
+
+VIEW:View 1
+  Light Angle = 50, 110
+END
+
+> update
+>delete /FLOW:Flow Analysis 1""")
+setup2.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS1.ccl, mode = replace, autoLoadLibrary = none")
+setup2.Exit()
+importedMeshComponent2 = system2.GetComponent(Name="Imported Mesh")
+system3 = template1.CreateSystem(
+    ComponentsToShare=[importedMeshComponent2],
+    Position="Right",
+    RelativeTo=system2)
+system3.DisplayText = "TRANS2"
+setup3 = system3.GetContainer(ComponentName="Setup")
+setup3.Edit()
+setup3.SendCommand(Command="""VIEW:View 1
+  Camera Mode = User Specified
+  CAMERA:
+    Option = Pivot Point and Quaternion
+    Pivot Point = 7.0075e-06, 0.011, -1.12672e-05
+    Scale = 38.6809
+    Pan = 0, 0
+    Rotation Quaternion = 0.279848, -0.364705, -0.115917, 0.880476
+    
+  END
+
+END
+
+VIEW:View 1
+  Light Angle = 50, 110
+END
+
+> update
+>delete /FLOW:Flow Analysis 1""")
+setup3.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS2.ccl, mode = replace, autoLoadLibrary = none")
+setup3.Exit()
+Save(FilePath = "C:/Users/z5713258/SVMG_MasterThesis/CFD/Example11Nov_3.wbpj", Overwrite=True)
+solution1 = system1.GetContainer(ComponentName="Solution")
+solution1.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
+  EXECUTION CONTROL:
+    EXECUTABLE SELECTION:
+      Double Precision = Off
+      Large Problem = Off
+    END
+    INTERPOLATOR STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+    END
+    PARTITIONER STEP CONTROL:
+      Multidomain Option = Automatic
+      Option = Spatial Partitioning
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARTITION SMOOTHING:
+        Maximum Partition Smoothing Sweeps = 100
+        Option = Smooth
+      END
+      PARTITIONING TYPE:
+        MeTiS Type = k-way
+        Option = MeTiS
+        Partition Size Rule = Automatic
+      END
+      SPATIAL PARTITIONING:
+        Option = Automatic
+      END
+    END
+    RUN DEFINITION:
+      Run Mode = Full
+      Solver Input File = C:/Users/z5713258/SVMG_MasterThesis/CFD/Example11Nov_3_files/dp0/CFX/CFX/STEADY.def
+    END
+    SOLVER STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARALLEL ENVIRONMENT:
+        Maximum Number of Processes = 1
+        Start Method = Serial
+      END
+    END
+  END
+END
+""")
+solution1.Exit()
+solution2 = system2.GetContainer(ComponentName="Solution")
+solution2.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
+  EXECUTION CONTROL:
+    EXECUTABLE SELECTION:
+      Double Precision = Off
+      Large Problem = Off
+    END
+    INTERPOLATOR STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+    END
+    PARTITIONER STEP CONTROL:
+      Multidomain Option = Automatic
+      Option = Spatial Partitioning
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARTITION SMOOTHING:
+        Maximum Partition Smoothing Sweeps = 100
+        Option = Smooth
+      END
+      PARTITIONING TYPE:
+        MeTiS Type = k-way
+        Option = MeTiS
+        Partition Size Rule = Automatic
+      END
+      SPATIAL PARTITIONING:
+        Option = Automatic
+      END
+    END
+    RUN DEFINITION:
+      Run Mode = Full
+      Solver Input File = C:/Users/z5713258/SVMG_MasterThesis/CFD/Example11Nov_3_files/dp0/CFX-1/CFX/TRANS1.def
+    END
+    SOLVER STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARALLEL ENVIRONMENT:
+        Maximum Number of Processes = 1
+        Start Method = Serial
+      END
+    END
+  END
+END
+""")
+solution2.Exit()
+solution3 = system3.GetContainer(ComponentName="Solution")
+solution3.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
+  EXECUTION CONTROL:
+    EXECUTABLE SELECTION:
+      Double Precision = Off
+      Large Problem = Off
+    END
+    INTERPOLATOR STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+    END
+    PARTITIONER STEP CONTROL:
+      Multidomain Option = Automatic
+      Option = Spatial Partitioning
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARTITION SMOOTHING:
+        Maximum Partition Smoothing Sweeps = 100
+        Option = Smooth
+      END
+      PARTITIONING TYPE:
+        MeTiS Type = k-way
+        Option = MeTiS
+        Partition Size Rule = Automatic
+      END
+      SPATIAL PARTITIONING:
+        Option = Automatic
+      END
+    END
+    RUN DEFINITION:
+      Run Mode = Full
+      Solver Input File = C:/Users/z5713258/SVMG_MasterThesis/CFD/Example11Nov_3_files/dp0/CFX-2/CFX/TRANS2.def
+    END
+    SOLVER STEP CONTROL:
+      Runtime Priority = Standard
+      MEMORY CONTROL:
+        Memory Allocation Factor = 1.0
+        Option = Model Based
+      END
+      PARALLEL ENVIRONMENT:
+        Maximum Number of Processes = 1
+        Start Method = Serial
+      END
+    END
+  END
+END
+""")
+solution3.Exit()
+Save(Overwrite=True)
