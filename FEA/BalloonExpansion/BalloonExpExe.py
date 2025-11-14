@@ -10,17 +10,17 @@ Code description:
 """
 start_time = time.time()
 # Set working directory
-ResultsMainDir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
-os.makedirs(ResultsMainDir, exist_ok=True)
-command_1 = r'cd C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
+InpDir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\BalloonExpansion\\INP'
+os.makedirs(InpDir, exist_ok=True)
+command_1 = r'cd C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\BalloonExpansion\\INP'
 proc_1 = subprocess.Popen(command_1, shell=True)
 
 # Set up results directory
-stent_inp_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
+stent_inp_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\Results'
 sh_template = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\job-FEA.sh'
 i = 1
 for filename in os.listdir(stent_inp_dir):
-    if filename.startswith("stent"):
+    if filename.startswith("FreeExpFull"):
         #print(filename)
         stent_location = os.path.join(stent_inp_dir, filename)
         base_name = os.path.splitext(filename)[0]
@@ -35,20 +35,20 @@ for filename in os.listdir(stent_inp_dir):
 
             sw_um = int(float(sw_str) * 1000)
             st_um = int(float(st_str) * 1000)
-        job_name = f"FreeExp_{nus}_SW{sw_um}_ST{st_um}"
-        job_name_full = f"FreeExpFull_{nus}_SW{sw_um}_ST{st_um}"
+        job_name = f"BallExp_{nus}_SW{sw_um}_ST{st_um}"
+        job_name_full = f"BallExpFull_{nus}_SW{sw_um}_ST{st_um}"
 
 
         #print(job_name)
-        working_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\INP'
-        script_path = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\FreeExpansion\\FreeExpFunctions.py'
-        command_2 = f'abaqus cae noGUI="{script_path}" -- "{stent_location},{job_name},{job_name_full},{base_name}"'
+        working_dir = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\BalloonExpansion\\INP'
+        script_path = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\BalloonExpansion\\BalloonExpFunctions.py'
+        command_2 = f'abaqus cae noGUI="{script_path}" -- "{stent_location},{job_name},{job_name_full}"'
 
         #command_2 = f'abaqus cae script=FreeExpansion.py -- {stent_location}'
         proc_2 = subprocess.Popen(command_2, shell=True, cwd=working_dir)
         proc_2.wait()
 
-        target_sh = os.path.join(ResultsMainDir, f"run_{nus}_SW{sw_um}_ST{st_um}.sh")
+        target_sh = os.path.join(InpDir, f"run_{nus}_SW{sw_um}_ST{st_um}.sh")
         with open(sh_template, 'r') as file:
             content = file.read()
         content = content.replace("<POT2>", job_name_full)
@@ -56,15 +56,7 @@ for filename in os.listdir(stent_inp_dir):
             file.write(content)
             
         i +=1
-    #if i == 2:
-    #    break 
 
-
-
-
-    # Path to python folder
-    # folder_python = os.path.join(config['path'], "CodesPython\\femurfracture\\simulation\\code\\python")
-    # os.chdir(folder_python)
 
     #if i % 10 == 0 : print(f"Case {formatted_i} : DONE")
 end_time = time.time()

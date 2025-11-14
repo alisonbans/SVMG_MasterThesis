@@ -8,7 +8,6 @@ def artery_to_surface(stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Re
         bpy.ops.object.select_all(action='SELECT')
         bpy.ops.object.delete(use_global=False)
 
-
     # Import the STL file
     bpy.ops.import_mesh.stl(filepath=stl_path)
 

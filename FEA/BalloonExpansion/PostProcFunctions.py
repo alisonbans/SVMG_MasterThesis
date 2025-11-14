@@ -106,6 +106,14 @@ def writeCSV(case_folder, odb_name):
             sortItem='Node Label', odb=odb, step=step_nb, frame=frame_nb, outputPosition=NODAL, 
             variable=(('U', NODAL), ), stepFrame=SPECIFY)
     #odb.close()
+
+def odb_to_STL():
+    session.linkedViewportCommands.setValues(_highlightLinkedViewports=True)
+    leaf = dgo.LeafFromElementSets(elementSets=("STENT-1.SET-ALL", "ARTERY-1.SET-ALL",))
+    session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
+    stlExport_kernel.STLExport(moduleName='Visualization', 
+        stlFileName='C:/Users/z5713258/AbaqusWD/job1/Job-1-stent.stl', 
+        stlFileType='ASCII')
 def diameter(step, case_folder):
 # --- Load node coordinates ---
     import pandas as pd

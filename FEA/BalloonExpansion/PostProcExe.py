@@ -2,7 +2,7 @@ import os
 import subprocess
 from PostProcFunctions import RR_Diameter
 
-odb_list = ["alison-dt1e05-MOD-Amp.odb", "alison-dt5e06-MOD-Amp.odb"]
+odb_list = ["alison-dt1e06-MOD-Amp.odb", "alison-dt3e06-MOD-Amp.odb"]
 for odb in odb_list:
     odb_, _ = os.path.splitext(odb)
     case_folder = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\BalloonExpansion\Results\{odb_}"
