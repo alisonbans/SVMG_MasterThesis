@@ -1,5 +1,6 @@
 import bpy
 import os
+import sys
 def artery_to_surface(stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Results/BalloonArteryCriExp3Nov.stl"):
     print('1')
     if not bpy.context.active_object is None :
@@ -242,12 +243,16 @@ def export(case = 'NUS19_SW60_ST60'):
             # Deselect the object after export
             obj.select_set(False)
 
-def main():
-    artery_to_surface()
+def main(case, stl_path):
+    artery_to_surface(stl_path)
     artery_elongation()
     select_and_fill_loop("PROXIMAL_EXT", 344, "INLET")
     select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
-    export()
+    export(case)
 
 if __name__ == "__main__":
-    main()
+    input = str(sys.argv[-1])
+    input = input.split(',')
+    case = input[0]
+    stl_path = input[1]
+    main(case, stl_path)

@@ -471,7 +471,7 @@ def balloon_exp_addons(model, deltaT = 1e-06):
         field='', magnitude=viscous_const, amplitude=UNSET)
     region = a.instances['ARTERY-1'].surfaces['SURF-ALL']
     mdb.models[model].Pressure(name='ARTERY-VISC', createStepName='Step-CRI',
-        region=region, distributionType=UNIFORM, field='', magnitude=1e-05,
+        region=region, distributionType=VISCOUS, field='', magnitude=1e-05,
         amplitude=UNSET)
     region = a.instances['STENT-1'].surfaces['SURF-ALL']
     mdb.models[model].Pressure(name='STENT-VISC', createStepName='Step-CRI', 

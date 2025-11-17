@@ -7,6 +7,7 @@ from abaqus import session
 import shutil
 import subprocess
 import os
+import stlExport_kernel
 
 def importODB(case_folder,odb_name):
     old_odb = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\BalloonExpansion\Results\OLD\{odb_name}"
@@ -107,12 +108,26 @@ def writeCSV(case_folder, odb_name):
             variable=(('U', NODAL), ), stepFrame=SPECIFY)
     #odb.close()
 
-def odb_to_STL():
+def odb_to_STL(stl_dir):
+    session.viewports['Viewport: 1'].animationController.setValues(
+        animationType=NONE)
+    session.viewports['Viewport: 1'].animationController.setValues(
+        animationType=TIME_HISTORY)
+    session.viewports['Viewport: 1'].animationController.play(
+        duration=UNLIMITED)
+    session.viewports['Viewport: 1'].animationController.stop()
+    session.viewports['Viewport: 1'].animationController.showLastFrame()
+    session.viewports['Viewport: 1'].view.setValues(session.views['Back'])
+    session.viewports['Viewport: 1'].view.setValues(nearPlane=47.4824, 
+        farPlane=80.365, width=15.4369, height=7.02444, viewOffsetX=0.189971, 
+        viewOffsetY=-0.0747198)
     session.linkedViewportCommands.setValues(_highlightLinkedViewports=True)
-    leaf = dgo.LeafFromElementSets(elementSets=("STENT-1.SET-ALL", "ARTERY-1.SET-ALL",))
+    leaf = dgo.LeafFromElementSets(elementSets=("ARTERY-1.SET-ALL", 
+        "STENT-1.SET-ALL", ))
     session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
+    import stlExport_kernel
     stlExport_kernel.STLExport(moduleName='Visualization', 
-        stlFileName='C:/Users/z5713258/AbaqusWD/job1/Job-1-stent.stl', 
+        stlFileName=stl_dir, 
         stlFileType='ASCII')
 def diameter(step, case_folder):
 # --- Load node coordinates ---
@@ -157,16 +172,16 @@ def RR_Diameter(case_folder):
     print(case_folder)
     print(f'Diameter Shrinkage = {d_shrinkage}')
 
-def main(case_folder,odb_name):
+def main(case_folder,odb_name,stl_dir):
     importODB(case_folder,odb_name) 
     EnergyRatios(case_folder, odb_name)
     writeCSV(case_folder, odb_name)
+    odb_to_STL(stl_dir)
 
 if __name__ == "__main__":
     input = str(sys.argv[-1])
     input = input.split(',')
-    if len(input) !=2:
-        raise ValueError("Make sure your input variable contains stent location only.")
     case_folder = input[0]
     odb_name = input[1]
-    main(case_folder,odb_name)
+    stl_dir = input[2]
+    main(case_folder,odb_name, stl_dir)
