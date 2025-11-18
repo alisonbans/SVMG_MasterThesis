@@ -1,7 +1,7 @@
 import bpy
 import os
 import sys
-def artery_to_surface(stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Results/BalloonArteryCriExp3Nov.stl"):
+def artery_to_surface(stl_path):
     print('1')
     if not bpy.context.active_object is None :
         bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
@@ -39,17 +39,22 @@ def artery_to_surface(stl_path = "C:/Users/z5713258/SVMG_MasterThesis/CFD/FEA_Re
 
 
     # Delete artery extermities
-    for face_index in [281433, 23899]:
+    for threshold in [-4, 26]:
         bpy.ops.object.mode_set(mode='OBJECT')
         artery = bpy.data.objects["STENTED"]
         bpy.context.view_layer.objects.active = artery
         obj.select_set(True)
         for poly in obj.data.polygons:
             poly.select = False
-        obj.data.polygons[face_index].select = True
+
+        # Select faces whose center is above threshold
+        for poly in artery.data.polygons:
+            if poly.center.z == threshold:  # Change > to < or == as needed
+                poly.select = True
+
+        # Switch to EDIT mode to see the selection
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type="FACE")
-        bpy.ops.mesh.select_similar(type='FACE_COPLANAR', threshold=0.01)
         bpy.ops.mesh.delete(type='FACE')
         
     bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=735850)
@@ -94,78 +99,72 @@ def artery_elongation():
     obj = bpy.data.objects["STENTED.001"]
     obj.name = "DISTAL"
 
+
     edges_to_extrude = [
-    ("DISTAL", 33963, 12, "DISTAL_EXT", ">"),    # Faces above z_target
-    ("PROXIMAL", 37596, -12, "PROXIMAL_EXT", "<")  # Faces below z_target
+        ("DISTAL", 26, 12, "DISTAL_EXT", ">"),    # Faces above z_target
+        ("PROXIMAL", -4, -12, "PROXIMAL_EXT", "<")  # Faces below z_target
     ]
 
     tol = 1e-5
-    for obj_name, edge_index, z_extrude, new_obj_name, comparison in edges_to_extrude:
-        # Deselect all objects
-        for obj in bpy.context.selected_objects:
-            obj.select_set(False)
 
+    for obj_name, z_target, z_extrude, new_obj_name, comparison in edges_to_extrude:
+        # Get the object and make it active
         obj = bpy.data.objects[obj_name]
-        obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
 
-        # Go to Edit Mode and Edge Selection
+        # Switch to OBJECT mode to manipulate edge selection
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Deselect all edges first
+        for edge in obj.data.edges:
+            edge.select = False
+
+        # Select edges whose average Z matches z_target
+        for edge in obj.data.edges:
+            v1, v2 = edge.vertices
+            z_avg = (obj.data.vertices[v1].co.z + obj.data.vertices[v2].co.z) / 2
+            if abs(z_avg - z_target) < tol:
+                edge.select = True
+
+        # Switch to EDIT mode and extrude along Z
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='EDGE')
-        bpy.ops.mesh.select_all(action='DESELECT')
-
-        # Switch to Object Mode to select starting edge
-        bpy.ops.object.mode_set(mode='OBJECT')
-        obj.data.edges[edge_index].select = True
-
-        # Back to Edit Mode and select similar connected edges
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_similar(type='EDGE_FACES', threshold=0.01)
-
-        # Filter edges to only those in the same Z plane
-        bpy.ops.object.mode_set(mode='OBJECT')
-        v1, v2 = obj.data.edges[edge_index].vertices
-        z_target = (obj.data.vertices[v1].co.z + obj.data.vertices[v2].co.z) / 2
-        threshold = 1e-5
-
-        for edge in obj.data.edges:
-            if edge.select:
-                v1, v2 = edge.vertices
-                z_avg = (obj.data.vertices[v1].co.z + obj.data.vertices[v2].co.z) / 2
-                if abs(z_avg - z_target) > threshold:
-                    edge.select = False
-
-        # Back to Edit Mode and extrude along Z
-        bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.extrude_region_move(
             TRANSFORM_OT_translate={"value": (0, 0, z_extrude)}
         )
 
-        # Switch to Object Mode
+        # Switch to OBJECT mode for face filtering
         bpy.ops.object.mode_set(mode='OBJECT')
-        
-        tolerance = 1e-5
 
+        # Deselect all faces first
+        for f in obj.data.polygons:
+            f.select = False
+
+        # Select faces created by extrusion based on Z range
         for f in obj.data.polygons:
             z_avg = sum(obj.data.vertices[v].co.z for v in f.vertices) / len(f.vertices)
-            
-            if obj_name == "DISTAL":
-                # Select faces created by extrusion
-                if z_target - tolerance <= z_avg <= z_target + z_extrude + tolerance:
+            if obj_name == 'DISTAL':
+                if z_target - tol <= z_avg <= z_target + z_extrude + tol:
                     f.select = True
-                else:
-                    f.select = False
-            elif obj_name == "PROXIMAL":
-                if comparison == "<" and z_avg < z_target - tol:
+                    
+            elif obj_name=='PROXIMAL':
+                if z_target + z_extrude - tol <= z_avg <= z_target + tol:
                     f.select = True
+
+        # Capture objects before separation
+        before_objs = set(bpy.data.objects)
+
         # Separate selected faces into a new object
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.separate(type='SELECTED')
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        # Rename the new object
-        new_obj = [o for o in bpy.context.selected_objects if o.name != obj.name][0]
+        # Find the new object and rename it
+        after_objs = set(bpy.data.objects)
+        new_obj = list(after_objs - before_objs)[0]
         new_obj.name = new_obj_name
+
 def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     print('3')
     obj = bpy.data.objects[obj_name]
@@ -208,7 +207,7 @@ def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     new_obj.name = new_obj_name
     #bpy.ops.mesh.edge_face_add()
     #bpy.ops.object.mode_set(mode='OBJECT')
-def export(case = 'NUS19_SW60_ST60'):
+def export(case):
     # Set your export directory
     export_dir = "C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input"
     case_dir = os.path.join(export_dir, case)
@@ -250,9 +249,26 @@ def main(case, stl_path):
     select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
     export(case)
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     input = str(sys.argv[-1])
     input = input.split(',')
     case = input[0]
     stl_path = input[1]
+    main(case, stl_path)
+"""
+
+if __name__ == "__main__":
+    # Extract arguments after '--'
+    args = sys.argv
+    if "--" in args:
+        custom_args = args[args.index("--") + 1:]
+    else:
+        custom_args = []
+
+    # Parse into dictionary
+    params = dict(arg.split("=") for arg in custom_args)
+    case = params.get("case")
+    stl_path = params.get("stl")
+
+    print(f"Running main with case={case}, stl_path={stl_path}")
     main(case, stl_path)
