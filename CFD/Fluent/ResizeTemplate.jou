@@ -1,0 +1,102 @@
+/file/set-tui-version "24.2"
+
+;; Open Manage Face Zones and enable scaling
+(cx-gui-do cx-activate-item "MenuBar*BoundaryMenu*Manage...")
+(cx-gui-do cx-set-toggle-button2 "Manage Face Zones*Frame1*ToggleBox1(Options)*Scale" #t)
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame1*ToggleBox1(Options)*Scale")
+
+;; Select all face zones and set scale factors
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" 
+           '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16))
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame3*List1(Face Zones)")
+(cx-gui-do cx-set-real-entry-list "Manage Face Zones*Table2*Frame2(Scale Factors)*RealEntry1(X)" '(0.001))
+(cx-gui-do cx-set-real-entry-list "Manage Face Zones*Table2*Frame2(Scale Factors)*RealEntry2(Y)" '(0.001))
+(cx-gui-do cx-set-real-entry-list "Manage Face Zones*Table2*Frame2(Scale Factors)*RealEntry3(Z)" '(0.001))
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+;; Rename face zones
+(cx-gui-do cx-set-toggle-button2 "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename" #t)
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" 
+           '(0 1 2 3 4 5 7 9 10 11 12 13 14 15 16))
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame3*List1(Face Zones)")
+
+;; Open Manage Face Zones dialog
+;; Enable rename
+(cx-gui-do cx-set-toggle-button2 "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename" #t)
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(0))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "distal1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(1))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "distal")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(2))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "distal_ext1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(3))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "distal_ext")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(4))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "inlet1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(5))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "inlet")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(7))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "outlet1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(8))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "outlet")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+;; Rename stent and proximal zones
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(9))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "proximal1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(10))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "proximal")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(11))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "proximal_ext1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(12))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "proximal_ext")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(13))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "stent1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(14))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "stent")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(15))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "stented1")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(16))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "stented")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+;; Close Manage Face Zones
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton2(Close)")
+
+;; Write mesh
+(cx-gui-do cx-activate-item "MenuBar*WriteSubMenu*Mesh...")
+(cx-gui-do cx-set-file-dialog-entries "Select File" 
+           '("C:/Users/z5713258/SVMG_MasterThesis/CFD/Fluent/Mesh/{{CASE_FOLDER}}.msh") 
+           "All Files (*)")

@@ -1,0 +1,70 @@
+﻿# encoding: utf-8
+# 2024 R2
+SetScriptVersion(Version="24.2.133")
+Open(FilePath="{{OLD_WBPJ}}")
+Extensions.UnloadExtension(
+    Id="5e7e01a6-8601-11e8-9f8c-28f10e13ffe6",
+    Version="2024.2",
+    Format="Binary")
+Extensions.UnloadExtension(
+    Id="5f463412-bd3e-484b-87e7-cbc0a665e474",
+    Version="2024.2",
+    Format="Binary")
+Extensions.UnloadExtension(
+    Id="ba012e44-4f35-4a97-aeff-8fe60efc33c9",
+    Version="24.2",
+    Format="Binary")
+Extensions.UnloadExtension(
+    Id="7b0e9e84-396d-4099-9602-2ced9dddc253",
+    Version="2024.2",
+    Format="Binary")
+Extensions.UnloadExtension(
+    Id="20180725-3f81-49eb-9f31-41364844c769",
+    Version="2024.2",
+    Format="Binary")
+Extensions.UnloadExtension(
+    Id="f3e3da52-fb02-4910-8cc9-980efd047bc6",
+    Version="2023.1",
+    Format="Binary")
+system1 = GetSystem(Name="CFX 2")
+results1 = system1.GetContainer(ComponentName="Results")
+results1.Edit()
+results1.SendCommand(Command="""VIEW:View 1
+  Light Angle = 50, 110
+END
+
+VIEW:View 2
+  Light Angle = 50, 110
+END
+
+VIEW:View 3
+  Light Angle = 50, 110
+END
+
+VIEW:View 4
+  Light Angle = 50, 110
+END
+
+> update
+DATA READER:
+  Clear All Objects = false
+  Append Results = true
+  Edit Case Names = false
+  Multi Configuration File Load Option = Last Case
+  Open in New View = true
+  Keep Camera Position = true
+  Load Particle Tracks = true
+  Multi Configuration File Load Option = Last Case
+  Construct Variables From Fourier Coefficients = true
+  Open to Compare = false
+  Files to Compare = 
+END
+
+DATA READER:
+Domains to Load=
+END
+
+>load filename= {{RES_PATH}}, force_reload=true""") 
+results1.SendCommand(Command=">readstate filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/Results.cst, mode=append, load=false, keepexpressions=true")
+# --- Save the Workbench project under a new name ---
+Save(FilePath="{{NEW_WBPJ}}", Overwrite=True)

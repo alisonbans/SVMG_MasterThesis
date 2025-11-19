@@ -31,7 +31,7 @@ END
 
 > update
 >delete /FLOW:Flow Analysis 1""")
-setup1.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/STEADY.ccl, mode = replace, autoLoadLibrary = none")
+setup1.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/STEADY.ccl, mode = replace, autoLoadLibrary = none")
 setup1.Exit()
 importedMeshComponent1 = system1.GetComponent(Name="Imported Mesh")
 system2 = template1.CreateSystem(
@@ -60,7 +60,7 @@ END
 
 > update
 >delete /FLOW:Flow Analysis 1""")
-setup2.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS1.ccl, mode = replace, autoLoadLibrary = none")
+setup2.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/TRANS1.ccl, mode = replace, autoLoadLibrary = none")
 setup2.Exit()
 importedMeshComponent2 = system2.GetComponent(Name="Imported Mesh")
 system3 = template1.CreateSystem(
@@ -89,178 +89,6 @@ END
 
 > update
 >delete /FLOW:Flow Analysis 1""")
-setup3.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/TRANS2.ccl, mode = replace, autoLoadLibrary = none")
+setup3.SendCommand(Command=">importccl filename=C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/TRANS2.ccl, mode = replace, autoLoadLibrary = none")
 setup3.Exit()
 Save(FilePath = "{{WBPJ_FILE_PATH}}", Overwrite=True)
-solution1 = system1.GetContainer(ComponentName="Solution")
-solution1.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
-  EXECUTION CONTROL:
-    EXECUTABLE SELECTION:
-      Double Precision = Off
-      Large Problem = Off
-    END
-    INTERPOLATOR STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-    END
-    PARTITIONER STEP CONTROL:
-      Multidomain Option = Automatic
-      Option = Spatial Partitioning
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARTITION SMOOTHING:
-        Maximum Partition Smoothing Sweeps = 100
-        Option = Smooth
-      END
-      PARTITIONING TYPE:
-        MeTiS Type = k-way
-        Option = MeTiS
-        Partition Size Rule = Automatic
-      END
-      SPATIAL PARTITIONING:
-        Option = Automatic
-      END
-    END
-    RUN DEFINITION:
-      Run Mode = Full
-      Solver Input File = {{DEF_PATH_STEADY}}
-    END
-    SOLVER STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARALLEL ENVIRONMENT:
-        Maximum Number of Processes = 1
-        Start Method = Serial
-      END
-    END
-  END
-END
-""")
-solution1.Exit()
-solution2 = system2.GetContainer(ComponentName="Solution")
-solution2.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
-  EXECUTION CONTROL:
-    EXECUTABLE SELECTION:
-      Double Precision = Off
-      Large Problem = Off
-    END
-    INTERPOLATOR STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-    END
-    PARTITIONER STEP CONTROL:
-      Multidomain Option = Automatic
-      Option = Spatial Partitioning
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARTITION SMOOTHING:
-        Maximum Partition Smoothing Sweeps = 100
-        Option = Smooth
-      END
-      PARTITIONING TYPE:
-        MeTiS Type = k-way
-        Option = MeTiS
-        Partition Size Rule = Automatic
-      END
-      SPATIAL PARTITIONING:
-        Option = Automatic
-      END
-    END
-    RUN DEFINITION:
-      Run Mode = Full
-      Solver Input File = {{DEF_PATH_TRANS1}}
-    END
-    SOLVER STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARALLEL ENVIRONMENT:
-        Maximum Number of Processes = 1
-        Start Method = Serial
-      END
-    END
-  END
-END
-""")
-solution2.Exit()
-solution3 = system3.GetContainer(ComponentName="Solution")
-solution3.SetExecutionControl(CCL=r"""&replace SIMULATION CONTROL:
-  EXECUTION CONTROL:
-    EXECUTABLE SELECTION:
-      Double Precision = Off
-      Large Problem = Off
-    END
-    INTERPOLATOR STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-    END
-    PARTITIONER STEP CONTROL:
-      Multidomain Option = Automatic
-      Option = Spatial Partitioning
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARTITION SMOOTHING:
-        Maximum Partition Smoothing Sweeps = 100
-        Option = Smooth
-      END
-      PARTITIONING TYPE:
-        MeTiS Type = k-way
-        Option = MeTiS
-        Partition Size Rule = Automatic
-      END
-      SPATIAL PARTITIONING:
-        Option = Automatic
-      END
-    END
-    RUN DEFINITION:
-      Run Mode = Full
-      Solver Input File = {{DEF_PATH_TRANS2}}
-    END
-    SOLVER STEP CONTROL:
-      Runtime Priority = Standard
-      MEMORY CONTROL:
-        Memory Allocation Factor = 1.0
-        Option = Model Based
-      END
-      PARALLEL ENVIRONMENT:
-        Maximum Number of Processes = 1
-        Start Method = Serial
-      END
-    END
-  END
-END
-""")
-
-solution1.Exit()
-solution1.Run()
-
-solution2.Exit()
-solution2.Run()
-
-solution3.Exit()
-solution3.Run()
-
-Save(Overwrite=True)

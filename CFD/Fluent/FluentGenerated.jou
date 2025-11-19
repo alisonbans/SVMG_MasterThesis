@@ -1,0 +1,36 @@
+;; Import STL files by specifying the folder and the pattern
+/file/import/cad n "C:\Users\z5713258\SVMG_MasterThesis\CFD\CFD_STL_input\Case002" "*.stl" y 40 y mm
+;;
+;; RENAME ACTION
+;; Call the renaming journal
+/file/read-journal "C:\Users\z5713258\SVMG_MasterThesis\CFD\Fluent\Rename.jou"
+
+;; Creation of the material point
+/material-point/create-material-point mp 0 0 0
+;;
+;; Sizing of superficial mesh - controls parameters
+/size-functions/set-global-controls 0.014 0.46 1.2
+/size-functions/create curvature face (STENTED STENT) curvature1 0.014 0.06 1.2 10
+/size-functions/create curvature face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) curvature2 0.098 0.46 1.2 10
+/size-functions/create proximity face (STENTED STENT) proximity1 0.014 0.08 1.2 3 face-face n y
+/size-functions/create proximity face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) proximity2 0.098 0.46 1.2 3 face-face n y
+/size-functions/list
+/scoped-sizing/compute
+;;
+;; Extract edges
+/objects/extract-edges (*) feature 40
+;;
+;; Create intersections
+/objects/create-intersection-loops collectively (*)
+;;
+;; Create superficial mesh
+/objects/wrap/wrap (*) collectively "wrap" shrink-wrap mp hybrid 1
+;;
+;; Compute volumetric region
+/objects/volumetric-regions/compute "wrap" y mp
+
+;;
+;; Compute volumetric mesh
+/mesh/auto-mesh/ "wrap" n n tet y
+
+/file/read-journal "C:\Users\z5713258\SVMG_MasterThesis\CFD\Fluent\ResizeGenerated.jou"

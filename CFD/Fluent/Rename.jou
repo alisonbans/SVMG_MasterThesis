@@ -1,0 +1,43 @@
+;; Set Fluent version
+/file/set-tui-version "24.2"
+
+;; Open Manage Face Zones dialog
+(cx-gui-do cx-activate-item "MenuBar*BoundaryMenu*Manage...")
+
+;; Enable rename
+(cx-gui-do cx-set-toggle-button2 "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename" #t)
+(cx-gui-do cx-activate-item "Manage Face Zones*Frame1*ToggleBox1(Options)*Rename")
+
+;; Rename zones (do in reverse order to avoid index shifting)
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(7))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "STENTED")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(6))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "STENT")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(5))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "PROXIMAL_EXT")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(4))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "PROXIMAL")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(3))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "OUTLET")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(2))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "INLET")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(1))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "DISTAL_EXT")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+(cx-gui-do cx-set-list-selections "Manage Face Zones*Frame3*List1(Face Zones)" '(1))
+(cx-gui-do cx-set-text-entry "Manage Face Zones*Table2*Frame1*TextEntry3(Name)" "DISTAL")
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton1(Apply)")
+
+;; Close the dialog
+(cx-gui-do cx-activate-item "Manage Face Zones*PanelButtons*PushButton2(Close)")
