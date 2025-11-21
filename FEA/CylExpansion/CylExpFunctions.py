@@ -1,69 +1,49 @@
 from abaqus import *
 from abaqusConstants import *
 import __main__
-import section
-#import regionToolset
 import displayGroupMdbToolset as dgm
-import part
-import material
-import assembly
-#import step
 import mesh
-#import optimization
-#import job
-#import sketch
-import visualization
-#import xyPlot
-import displayGroupOdbToolset as dgo
-import connectorBehavior
-import math
 from abaqus import session
 
 # Balloon and Cylinder ------------------------------------------------------------
-def Balloon(model):
-    E = 850
-    density = 1e-09
-    poisson = 0.45
-    viscous_const = float(0.01 * density * math.sqrt(E*(1-poisson)/density/(1+poisson)/(1-2*poisson)))
-    #Import balloon
-    mdb.models[model].PartFromInputFile(
-        inputFileName='D:/Alison/b3x18_mesh.inp')
-    p = mdb.models[model].parts['PART-1']
-    mdb.models[model].parts.changeKey(fromName='PART-1', toName='BALLOON')
+def cylinder_exp(model):
+    # Geometry
+    s = mdb.models[model].ConstrainedSketch(name='__profile__', 
+        sheetSize=200.0)
+    g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
+    s.setPrimaryObject(option=STANDALONE)
+    s.CircleByCenterPerimeter(center=(0.0, 0.0), point1=(13.75, -1.25))
+    s.ObliqueDimension(vertex1=v[0], vertex2=v[1], textPoint=(-2.43898773193359, 
+        -23.2342948913574), value=0.3)
+    p = mdb.models[model].Part(name='CYL-EXP', dimensionality=THREE_D, 
+        type=DEFORMABLE_BODY)
+    p = mdb.models[model].parts['CYL-EXP']
+    p.BaseShellExtrude(sketch=s, depth=22.0)
+    s.unsetPrimaryObject()
+    p = mdb.models[model].parts['CYL-EXP']
+    del mdb.models[model].sketches['__profile__']
+    #Mesh
+    p = mdb.models[model].parts['CYL-EXP']
+    p.seedPart(size=0.05, deviationFactor=0.1, minSizeFactor=0.1)
+    p.generateMesh()
     # Sets and Surfaces
-    p = mdb.models[model].parts['BALLOON']
+    p = mdb.models[model].parts['CYL-EXP']
+    n = p.nodes
+    nodes = n.getSequenceFromMask(mask=('[#ffffffff:528 #3fff ]', ), )
+    p.Set(nodes=nodes, name='SET-NODE')
     e = p.elements
-    elements = e.getSequenceFromMask(mask=('[#ffffffff:262 #ffff ]', ), )
+    elements = e.getSequenceFromMask(mask=('[#ffffffff:527 #ff ]', ), )
     p.Set(elements=elements, name='SET-ELE')
-    elements = e.getSequenceFromMask(mask=('[#0:131 #ffffff00 #ffffffff:3 ]', ), )
-    p.Set(elements=elements, name='SET-EXT1')
-    e = p.elements
-    elements = e.getSequenceFromMask(mask=('[#0:95 #fff00000 #ffffffff:3 #fff ]', 
-        ), )
-    p.Set(elements=elements, name='SET-EXT2')   
     s = p.elements
-    side2Elements = s.getSequenceFromMask(mask=('[#ffffffff:262 #ffff ]', ), )
-    p.Surface(side2Elements=side2Elements, name='SURF-IN')
-    side1Elements = s.getSequenceFromMask(mask=('[#ffffffff:262 #ffff ]', ), )
-    p.Surface(side1Elements=side1Elements, name='SURF-OUT') 
-    #Create and assign material 
-    mdb.models[model].Material(name='BALLOON')
-    mdb.models[model].materials['BALLOON'].Density(table=((density, ), ))
-    mdb.models[model].materials['BALLOON'].Elastic(table=((E, poisson), ))
-    mdb.models[model].MembraneSection(name='Section-BALLOON', 
-        material='BALLOON', thicknessType=UNIFORM, thickness=0.03, 
-        thicknessField='', poissonDefinition=DEFAULT)
+    side1Elements = s.getSequenceFromMask(mask=('[#ffffffff:527 #ff ]', ), )
+    p.Surface(side1Elements=side1Elements, name='SURF-OUT')
+    # Selection Assignment
+    mdb.models[model].SurfaceSection(name='Section-CYL-EXP', useDensity=ON, 
+        density=1.0)
     region = p.sets['SET-ELE']
-    p.SectionAssignment(region=region, sectionName='Section-BALLOON', offset=0.0, 
+    p.SectionAssignment(region=region, sectionName='Section-CYL-EXP', offset=0.0, 
         offsetType=MIDDLE_SURFACE, offsetField='', 
         thicknessAssignment=FROM_SECTION)
-    # Assign mesh element type
-    elemType1 = mesh.ElemType(elemCode=M3D4R, elemLibrary=EXPLICIT, 
-        secondOrderAccuracy=OFF, hourglassControl=DEFAULT)
-    z1 = p.elements
-    elems1 = z1[0:8400]
-    pickedRegions =(elems1, )
-    p.setElementType(regions=pickedRegions, elemTypes=(elemType1, ))
 def cylinder_cri(model, name='CYL-CRI'):
     # Geometry
     s = mdb.models[model].ConstrainedSketch(name='__profile__', 
@@ -107,6 +87,7 @@ def cylinder_cri(model, name='CYL-CRI'):
 # Stent ---------------------------------------------------------------------------
 def MatCoCr(model): 
     mdb.models[model].Material(name='CoCr')
+    mdb.models[model].materials['CoCr'].Damping(alpha=50.0)
     mdb.models[model].materials['CoCr'].Density(table=((8e-09, ), ))
     mdb.models[model].materials['CoCr'].Elastic(table=((233000.0, 0.35), ))
     mdb.models[model].materials['CoCr'].Plastic(scaleStress=None, table=((
@@ -288,27 +269,21 @@ def ArteryMaterial(model):
     mdb.models[model].materials['Adventitia'].Damping(alpha=2000.0)
 
 # Model -----------------------------------------------------------------------
-def assembly_ballonexp(model):
+def assembly_cylexp(model):
     a = mdb.models[model].rootAssembly
-    a.DatumCsysByDefault(CARTESIAN)
     p = mdb.models[model].parts['ARTERY']
     a.Instance(name='ARTERY-1', part=p, dependent=ON)
-    p = mdb.models[model].parts['BALLOON']
-    a.Instance(name='BALLOON-1', part=p, dependent=ON)
-    p = mdb.models[model].parts['STENT']
-    a.Instance(name='STENT-1', part=p, dependent=ON)
     p = mdb.models[model].parts['CYL-CRI']
     a.Instance(name='CYL-CRI-1', part=p, dependent=ON)
-    a.translate(instanceList=('ARTERY-1', ), vector=(0.0, 0.0, -4.0))    
-    a.translate(instanceList=('BALLOON-1', ), vector=(0.0, 0.0, 20.0))
-def balloon_exp_addons(model, deltaT = 1e-06):
-    E = 850
-    density = 1e-09
-    poisson = 0.45
-    viscous_const = float(0.01 * density * math.sqrt(E*(1-poisson)/density/(1+poisson)/(1-2*poisson)))
-    pressure_mpa = float(0.101325*12)
-    cyl_exp = mdb.models[model].parts['CYL-CRI']
-    cyl_exp.DatumCsysByThreePoints(name='Dat-CYL', coordSysType=CYLINDRICAL, origin=(0.0, 
+    p = mdb.models[model].parts['CYL-EXP']
+    a.Instance(name='CYL-EXP-1', part=p, dependent=ON)
+    p = mdb.models[model].parts['STENT']
+    a.Instance(name='STENT-1', part=p, dependent=ON)
+    a.translate(instanceList=('ARTERY-1', ), vector=(0.0, 0.0, -4.0))   
+def cyl_exp_addons(model, deltaT = 1e-06):
+
+    cyl_cri = mdb.models[model].parts['CYL-CRI']
+    cyl_cri.DatumCsysByThreePoints(name='Dat-CYL', coordSysType=CYLINDRICAL, origin=(0.0, 
         0.0, 0.0), line1=(1.0, 0.0, 0.0), line2=(0.0, 1.0, 0.0))
     # Define mesh element types 
     elemType1 = mesh.ElemType(elemCode=C3D8R, elemLibrary=EXPLICIT, 
@@ -325,8 +300,6 @@ def balloon_exp_addons(model, deltaT = 1e-06):
     elems1 = z1[0:110189]
     pickedRegions =(elems1, )
     p.setElementType(regions=pickedRegions, elemTypes=(elemType1, ))
-    a = mdb.models[model].rootAssembly
-    a.regenerate()
     p = mdb.models[model].parts['STENT']
     elemType1 = mesh.ElemType(elemCode=C3D8R, elemLibrary=EXPLICIT, 
         kinematicSplit=AVERAGE_STRAIN, secondOrderAccuracy=OFF, 
@@ -335,14 +308,13 @@ def balloon_exp_addons(model, deltaT = 1e-06):
     elems1 = z1[0:140991]
     pickedRegions =(elems1, )
     p.setElementType(regions=pickedRegions, elemTypes=(elemType1, ))
-    a = mdb.models[model].rootAssembly
-    p = mdb.models[model].parts['BALLOON']
-    elemType1 = mesh.ElemType(elemCode=M3D4R, elemLibrary=EXPLICIT, 
-        secondOrderAccuracy=OFF, hourglassControl=DEFAULT)
+    p = mdb.models[model].parts['CYL-EXP']
+    elemType1 = mesh.ElemType(elemCode=SFM3D4R, elemLibrary=EXPLICIT)
     z1 = p.elements
-    elems1 = z1[0:8400]
+    elems1 = z1[0:16872]
     pickedRegions =(elems1, )
     p.setElementType(regions=pickedRegions, elemTypes=(elemType1, ))
+    a = mdb.models[model].rootAssembly
     a.regenerate()
     # Create the steps 
     mdb.models[model].ExplicitDynamicsStep(name='Step-CRI', 
@@ -376,12 +348,6 @@ def balloon_exp_addons(model, deltaT = 1e-06):
     mdb.models[model].historyOutputRequests['H-Output-2'].setValues(variables=(
         'ALLIE', 'ALLKE'), region=regionDef, sectionPoints=DEFAULT, 
         rebar=EXCLUDE)
-    mdb.models[model].HistoryOutputRequest(name='H-Output-3', 
-        createStepName='Step-CRI', variables=('ALLIE', 'ALLKE'))
-    regionDef=mdb.models[model].rootAssembly.allInstances['BALLOON-1'].sets['SET-ELE']
-    mdb.models[model].historyOutputRequests['H-Output-3'].setValues(variables=(
-        'ALLIE', 'ALLKE'), region=regionDef, sectionPoints=DEFAULT, 
-        rebar=EXCLUDE)
     # Create interaction properties 
     mdb.models[model].ContactProperty('CYL-STENT')
     mdb.models[model].interactionProperties['CYL-STENT'].TangentialBehavior(
@@ -402,61 +368,26 @@ def balloon_exp_addons(model, deltaT = 1e-06):
         pressureOverclosure=HARD, allowSeparation=ON,
         constraintEnforcementMethod=DEFAULT)
     # Create the interaction
-    mdb.models[model].ContactExp(name='STENT_ARTERY_BALLOON', 
+    mdb.models[model].ContactExp(name='STENT_ARTERY_CYL', 
         createStepName='Initial')
-    r11=mdb.models[model].rootAssembly.instances['CYL-CRI-1'].surfaces['SURF-IN']
-    r12=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-OUT']
-    r21=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-OUT']
-    r22=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-ALL']
-    r31=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-ALL']
-    r41=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-OUT']
-    r51=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-IN']
-    mdb.models[model].interactions['STENT_ARTERY_BALLOON'].includedPairs.setValuesInStep(
-        stepName='Initial', useAllstar=OFF, addPairs=((r11, r12), (r21, r22), (
-        r31, SELF), (r41, SELF), (r51, SELF)))
-    r21=mdb.models[model].rootAssembly.instances['CYL-CRI-1'].surfaces['SURF-IN']
-    r22=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-OUT']
-    mdb.models[model].interactions['STENT_ARTERY_BALLOON'].contactPropertyAssignments.appendInStep(
-        stepName='Initial', assignments=((GLOBAL, SELF, 'STENT-ARTERY'), (r21, 
-        r22, 'CYL-STENT')))
-    r11=mdb.models[model].rootAssembly.instances['CYL-CRI-1'].surfaces['SURF-IN']
-    r12=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-OUT']
-    mdb.models[model].interactions['STENT_ARTERY_BALLOON'].includedPairs.setValuesInStep(
-        stepName='Step-REL1', removePairs=((r11, r12), ))
-    r11=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-OUT']
-    r12=mdb.models[model].rootAssembly.instances['ARTERY-1'].surfaces['SURF-IN']
-    r21=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-OUT']
-    r22=mdb.models[model].rootAssembly.instances['ARTERY-1'].surfaces['SURF-IN']
-    mdb.models[model].interactions['STENT_ARTERY_BALLOON'].includedPairs.setValuesInStep(
-        stepName='Step-EXP', addPairs=((r11, r12), (r21, r22), ))
-    r11=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-OUT']
-    r12=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-ALL']
-    r21=mdb.models[model].rootAssembly.instances['BALLOON-1'].surfaces['SURF-OUT']
-    r22=mdb.models[model].rootAssembly.instances['ARTERY-1'].surfaces['SURF-IN']
-    mdb.models[model].interactions['STENT_ARTERY_BALLOON'].includedPairs.setValuesInStep(
-        stepName='Step-REL2', removePairs=((r11, r12), (r21, r22), ))
-    # Create the rigid body and reference point for the balloon
-    a = mdb.models[model].rootAssembly
-    n11 = a.instances['BALLOON-1'].nodes
-    a.ReferencePoint(point=n11[3269])    
-    n21 = a.instances['BALLOON-1'].nodes
-    a.ReferencePoint(point=n21[4415])
-    mdb.models[model].rootAssembly.features.changeKey(fromName='RP-2', 
-        toName='RP-EXT1')
-    mdb.models[model].rootAssembly.features.changeKey(fromName='RP-1', 
-        toName='RP-EXT2')
-    region2=a.instances['BALLOON-1'].sets['SET-EXT1']
-    r1 = a.referencePoints
-    refPoints1=(r1[11], )
-    region1=regionToolset.Region(referencePoints=refPoints1)
-    mdb.models[model].RigidBody(name='RB_EXT1', refPointRegion=region1, 
-        bodyRegion=region2)
-    region2=a.instances['BALLOON-1'].sets['SET-EXT2']
-    r1 = a.referencePoints
-    refPoints1=(r1[10], )
-    region1=regionToolset.Region(referencePoints=refPoints1)
-    mdb.models[model].RigidBody(name='RB_EXT2', refPointRegion=region1, 
-        bodyRegion=region2)
+    cri_in=mdb.models[model].rootAssembly.instances['CYL-CRI-1'].surfaces['SURF-IN']
+    stent_out=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-OUT']
+    stent_all=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-ALL']
+    stent_in=mdb.models[model].rootAssembly.instances['STENT-1'].surfaces['SURF-IN']
+    exp_out=mdb.models[model].rootAssembly.instances['CYL-EXP-1'].surfaces['SURF-OUT']
+    artery_in =mdb.models[model].rootAssembly.instances['ARTERY-1'].surfaces['SURF-IN']
+    mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
+        stepName='Initial', useAllstar=OFF, addPairs=((cri_in, stent_out), (stent_all, stent_all)))
+    mdb.models[model].interactions['STENT_ARTERY_CYL'].contactPropertyAssignments.appendInStep(
+        stepName='Initial', assignments=((GLOBAL, SELF, 'STENT-ARTERY'), (cri_in, 
+        stent_out, 'CYL-STENT'),(exp_out, 
+        stent_in, 'CYL-STENT')))
+    mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
+        stepName='Step-REL1', removePairs=((cri_in, stent_out), ))
+    mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
+        stepName='Step-EXP', addPairs=((stent_out, artery_in), (exp_out, stent_in), ))
+    mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
+        stepName='Step-REL2', removePairs=((exp_out, stent_in), ))
     # Add amplitudes 
     a = mdb.models[model].rootAssembly
     mdb.models[model].SmoothStepAmplitude(name='AMP-CRI', timeSpan=TOTAL, 
@@ -465,10 +396,6 @@ def balloon_exp_addons(model, deltaT = 1e-06):
         data=((0.5, 0.0), (0.9, 1.0), (0.95, 1.0), (1.0, 1.0)))    
     # Create loads and boundary conditions 
     a = mdb.models[model].rootAssembly
-    region = a.instances['BALLOON-1'].surfaces['SURF-OUT'] 
-    mdb.models[model].Pressure(name='BALLOON-VISC', 
-        createStepName='Step-CRI', region=region, distributionType=VISCOUS, 
-        field='', magnitude=viscous_const, amplitude=UNSET)
     region = a.instances['ARTERY-1'].surfaces['SURF-ALL']
     mdb.models[model].Pressure(name='ARTERY-VISC', createStepName='Step-CRI',
         region=region, distributionType=VISCOUS, field='', magnitude=1e-05,
@@ -477,12 +404,12 @@ def balloon_exp_addons(model, deltaT = 1e-06):
     mdb.models[model].Pressure(name='STENT-VISC', createStepName='Step-CRI', 
         region=region, distributionType=VISCOUS, field='', magnitude=0.0006, 
         amplitude=UNSET)
-    region = a.instances['BALLOON-1'].surfaces['SURF-IN']
-    mdb.models[model].Pressure(name='BALLOON-EXPANSION', createStepName='Step-EXP', 
-        region=region, distributionType=UNIFORM, field='', magnitude=pressure_mpa, 
-        amplitude='AMP-EXP')
     region = a.instances['CYL-CRI-1'].sets['SET-NODE']
     datum = mdb.models[model].rootAssembly.instances['CYL-CRI-1'].datums[6]
+    mdb.models[model].DisplacementBC(name='CYL-EXP', createStepName='Step-EXP', 
+        region=region, u1=1.2, u2=UNSET, u3=UNSET, ur1=UNSET, ur2=UNSET, 
+        ur3=UNSET, amplitude='AMP-EXP', fixed=OFF, 
+        distributionType=UNIFORM, fieldName='', localCsys=datum)
     mdb.models[model].DisplacementBC(name='CYL-CRI', 
         createStepName='Step-CRI', region=region, u1=-1.54, u2=UNSET, u3=UNSET, 
         ur1=UNSET, ur2=UNSET, ur3=UNSET, amplitude='AMP-CRI', 
@@ -490,45 +417,18 @@ def balloon_exp_addons(model, deltaT = 1e-06):
     region = a.instances['ARTERY-1'].sets['SET-NODE']
     mdb.models[model].EncastreBC(name='ARTERY-ENCASTRE', createStepName='Initial',
         region=region, localCsys=None)
-    r1 = a.referencePoints
-    refPoints1=(r1[10], r1[11], )
-    region = a.Set(referencePoints=refPoints1, name='SET-4')
-    mdb.models[model].EncastreBC(name='BALLOON-ENCASTER', createStepName='Initial', 
-        region=region, localCsys=None)
 
-# INP Modifications --------------------------------------------------------------
-def replace_interaction_except_first(inp_path):
-    with open(inp_path, 'r') as f:
-        lines = f.readlines()
-
-    seen = 0
-    new_lines = []
-
-    for line in lines:
-        lower = line.lower()
-
-        if "op=new" in lower:
-            seen += 1
-            if seen >= 2:   # replace only from the second occurrence onward
-                line = line.replace("op=NEW", "op=MOD")
-
-
-        new_lines.append(line)
-    with open(inp_path, 'w') as f:
-        f.writelines(new_lines)
-
-replace_interaction_except_first(r'C:\Users\z5713258\AbaqusWD\MOD\alison-dt1e06-MOD.inp')
 # Main ---------------------------------------------------------------------------
-def BalloonExpansion(stent_location, job_name, job_name_full):
-    model = 'BALLOON-STENT-ARTERY'
+def CylinderExpansion(stent_location, job_name, job_name_full):
+    model = 'CYLINDER-STENT-ARTERY'
     mdb.models.changeKey(fromName = 'Model-1', toName=model)
     MatCoCr(model)
-    Balloon(model)
+    cylinder_exp(model)
     expanded_stent(model, stent_location)
     ArteryMaterial(model)
     artery(model)
     cylinder_cri(model)
-    assembly_ballonexp(model)
+    assembly_cylexp(model)
     mdb.Job(name=job_name, model=model, description='', type=ANALYSIS, 
         atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
         memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
@@ -541,7 +441,7 @@ def BalloonExpansion(stent_location, job_name, job_name_full):
     mdb.close()
     mdb.ModelFromInputFile(name=job_name, inputFileName=os.path.join(os.getcwd(), f"{job_name}.inp"))
     del mdb.models['Model-1']
-    balloon_exp_addons(job_name, 1e-06)
+    cyl_exp_addons(job_name, 1e-06)
     mdb.Job(name=job_name_full, model=job_name, description='', type=ANALYSIS, 
         atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
         memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 
@@ -551,14 +451,12 @@ def BalloonExpansion(stent_location, job_name, job_name_full):
         activateLoadBalancing=False, numThreadsPerMpiProcess=1, 
         multiprocessingMode=DEFAULT, numCpus=1, numGPUs=0)
     mdb.jobs[job_name_full].writeInput(consistencyChecking=OFF)
-    replace_interaction_except_first(os.path.join(os.getcwd(), f"{job_name}.inp"))
 
 
-"""
 if __name__ == "__main__":
     input = str(sys.argv[-1])
     input = input.split(',')
     stent_location = input[0]
     job_name = input[1]
     job_name_full = input[2]
-    BalloonExpansion(stent_location, job_name, job_name_full)"""
+    CylinderExpansion(stent_location, job_name, job_name_full)
