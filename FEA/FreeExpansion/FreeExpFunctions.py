@@ -6,7 +6,7 @@ import __main__
 import displayGroupMdbToolset as dgm
 import mesh
 def CylExp(model):
-    # Geometry
+# Geometry
     s = mdb.models[model].ConstrainedSketch(name='__profile__', 
         sheetSize=200.0)
     g, v, d, c = s.geometry, s.vertices, s.dimensions, s.constraints
@@ -53,12 +53,7 @@ def Assembly(model):
     a = mdb.models[model].rootAssembly  
     a.DatumCsysByDefault(CARTESIAN)
     a.Instance(name='CYL-EXP-1', part=cyl_exp, dependent=ON)
-    stent = mdb.models[model].parts['STENT']
-    a.Instance(name='STENT-1', part=stent, dependent=ON)
-    f1 = a.instances['STENT-1'].faces
-    f2 = a.instances['CYL-EXP-1'].faces
-    a.Coaxial(movableAxis=f1[8], fixedAxis=f2[0], flip=OFF)
-    a.translate(instanceList=('STENT-1', ), vector=(0.0, 0.0, 26.0))
+    a.translate(instanceList=('STENT-1', ), vector=(0.0, 0.0, 26.5))
 def MatCoCr(model): 
     mdb.models[model].Material(name='CoCr')
     mdb.models[model].materials['CoCr'].Density(table=((8e-09, ), ))
@@ -154,8 +149,7 @@ def FreeExp_AddOns(model):
 def FreeExpansion(stent_location, job_name, job_name_full,base_name):
     mdb.ModelFromInputFile(name=base_name, inputFileName=stent_location)
     del mdb.models['Model-1']
-    model = 'CYL-STENT'
-    mdb.models.changeKey(fromName = base_name, toName=model)
+    model = base_name
     MatCoCr(model)
     CylExp(model)
     Assembly(model)
@@ -190,3 +184,8 @@ if __name__ == "__main__":
     job_name_full = input[2]
     base_name = input[3]
     FreeExpansion(stent_location, job_name, job_name_full, base_name)
+
+
+
+
+

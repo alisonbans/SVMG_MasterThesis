@@ -1,5 +1,5 @@
 ;; Import STL files by specifying the folder and the pattern
-/file/import/cad n "C:\Users\z5713258\SVMG_MasterThesis\CFD\CFD_STL_input\Case002" "*.stl" y 40 y mm
+/file/import/cad n "C:\Users\z5713258\SVMG_MasterThesis\CFD\Blender\Results\example" "*.stl" y 40 y mm
 ;;
 ;; RENAME ACTION
 ;; Call the renaming journal
@@ -34,3 +34,5 @@
 /mesh/auto-mesh/ "wrap" n n tet y
 
 /file/read-journal "C:\Users\z5713258\SVMG_MasterThesis\CFD\Fluent\ResizeGenerated.jou"
+
+(exit)

@@ -28,7 +28,7 @@ def generate_journals(case_folder):
     with open(JN2_GENERATED, "w", encoding="utf-8") as output:
         output.write(content)
 
-def run_fluent_meshing(journal_path):
+def run_fluent_meshing():
     """
     Launch Fluent in 3D meshing mode and run a journal file.
     """
@@ -39,12 +39,15 @@ def run_fluent_meshing(journal_path):
         "-meshing",
         #"-g",            # batch mode (no GUI splash)
         "-t", "4",       # threads (adjust as needed)
-        "-i", journal_path
+        "-i", JN_GENERATED
     ]
 
     # Launch Fluent
     subprocess.run(cmd, check=True)
 
 # Example usage
-generate_journals("Case002")        # generate the journals first
-run_fluent_meshing(JN_GENERATED)    # run Fluent with the generated journal
+
+def main_fluent(case_folder):
+    generate_journals(case_folder)        # generate the journals first
+    run_fluent_meshing()    # run Fluent with the generated journal
+    

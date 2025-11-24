@@ -1,11 +1,12 @@
 clc;
 close all;
 clear all;
-
+function status = Main_HS1(x_c)
+status = 3;
 %% This code generates the IR1 stent based in the design variables x values
 % Design variable x values to be entred below:
 % Base values of x. 
-x(1) = 19;% Number of unit struts in a helix
+x(1) = x_c(1);% Number of unit struts in a helix
 x(2) = 0.46;% Crimped radius
 x(3) = 18;% Stent length SL x(5)
 x(4) = 0.95; %End Row height (6)
@@ -21,11 +22,12 @@ x(13) = 0.07540;% ww_connector(1)
 x(14) = 0.61571;% ww_connector(2)
 x(15) = 4.16285;% ww_connector(3)
 x(16) = 1.79921;% ww_connector(4)
-x(17) = 0.06;% strut width
-x(18) = 0.06;% strut_thickness
+x(17) = x_c(2);% strut width
+x(18) = x_c(3);% strut_thickness
 
 % Add hs1 folder in the path and call the function for stent generation
 hs1_folder = fullfile(pwd, 'HS1');
 addpath(hs1_folder);
-Main(x)
+status = Main(x);
 rmpath(hs1_folder);
+return

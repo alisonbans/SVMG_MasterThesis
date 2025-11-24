@@ -39,12 +39,13 @@ x(16) = 1.79921;% ww_connector(4)
 % -------------------------------------------------------------------------
 
 % Define design space -----------------------------------------------------
-N = 5;
+N = 30;
 x1_levels = [15,16,17,18,19,20,21,22,23,24,25];
-x17_min = 0.05;
-x17_max = 0.08;
-x18_min = 0.05;
-x18_max = 0.07;
+x1_levels = [17,18,19,20,21];
+x17_min = 0.08;
+x17_max = 0.12;
+x18_min = 0.055;
+x18_max = 0.065;
 
 % Set a seed and randomly select values following latin hypercube space sampling
 rng(123);

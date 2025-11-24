@@ -27,11 +27,9 @@ def run_postproc():
     print(" ".join(cmd))
 
     subprocess.run(cmd, check=True)
-
-if __name__ == "__main__":
-    generate_journal(OLD_WBPJ, NEW_WBPJ, RES)
+def main_wb_pp(old_wbpj, new_wbpj, res):
+    generate_journal(old_wbpj, new_wbpj, res)
     run_postproc()
-    #move_def_files(def_path_steady, def_path_trans1, def_path_trans2)
-
-
+if __name__ == "__main__":
+    main_wb_pp(OLD_WBPJ, NEW_WBPJ, RES)
 

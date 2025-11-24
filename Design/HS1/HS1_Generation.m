@@ -405,7 +405,7 @@ ps_file_name = "stent.x_t";
 ps_file_name = sprintf('stent_NUS%d_SW%.4f_ST%.4f.x_t', NS, strut_width, strut_thickness);
 stl_file_name = "stent.STL";
 stl_file_name = sprintf('stent_NUS%d_SW%.4f_ST%.4f.STL', NS, strut_width, strut_thickness);
-step_file_name = sprintf('stent_NUS%d_SW%.4f_ST%.4f.STEP', NS, strut_width, strut_thickness);
+step_file_name = sprintf('stent_NUS%d_SW%d_ST%d.STEP', NS, round(strut_width*1000), round(strut_thickness*1000));
 fullpath_sw = fullfile(result_location,file_name);
 py.sld_interface.save_sw_file(fullpath_sw);
 %fullpath_ps = fullfile(result_location,ps_file_name);

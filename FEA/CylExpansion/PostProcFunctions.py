@@ -7,13 +7,13 @@ from abaqus import session
 import shutil
 import subprocess
 import os
-import stlExport_kernel
+#import stlExport_kernel
 
 def importODB(case_folder,odb_name):
-    old_odb = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\BalloonExpansion\Results\OLD\{odb_name}"
+    old_odb = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{odb_name}"
     new_job = rf"{case_folder}\{odb_name}"
-    cmd = f'abaqus upgrade -job {new_job} -odb "{old_odb}"'
-    os.system(cmd)  
+    #cmd = f'abaqus upgrade -job {new_job} -odb "{old_odb}"'
+    #os.system(cmd)  
     from  abaqus import session
     session.mdbData.summary()
     o1 = session.openOdb(
@@ -27,15 +27,10 @@ def EnergyRatios(case_folder,odb_name):
     # Extract XY data for Internal and Kinetic energy
     components = {
         'STENT': ('SET-ALL-1', 'StentEnergyRatio'),
-        'BALLOON': ('SET-ELE-1', 'BalloonEnergyRatio'),
         'ARTERY': ('SET-ALL-1', 'ArteryEnergyRatio')
     }
     session.XYDataFromHistory(name='ALLIE PI: ARTERY-1 ELSET SET-ALL-1', odb=odb, 
         outputVariableName='Internal energy: ALLIE PI: ARTERY-1 in ELSET SET-ALL', 
-        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
-        __linkedVpName__='Viewport: 1')
-    session.XYDataFromHistory(name='ALLIE PI: BALLOON-1 ELSET SET-ELE-1', odb=odb, 
-        outputVariableName='Internal energy: ALLIE PI: BALLOON-1 in ELSET SET-ELE', 
         steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
         __linkedVpName__='Viewport: 1')
     session.XYDataFromHistory(name='ALLIE PI: STENT-1 ELSET SET-ALL-1', odb=odb, 
@@ -44,10 +39,6 @@ def EnergyRatios(case_folder,odb_name):
         __linkedVpName__='Viewport: 1')
     session.XYDataFromHistory(name='ALLKE PI: ARTERY-1 ELSET SET-ALL-1', odb=odb, 
         outputVariableName='Kinetic energy: ALLKE PI: ARTERY-1 in ELSET SET-ALL', 
-        steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
-        __linkedVpName__='Viewport: 1')
-    session.XYDataFromHistory(name='ALLKE PI: BALLOON-1 ELSET SET-ELE-1', odb=odb, 
-        outputVariableName='Kinetic energy: ALLKE PI: BALLOON-1 in ELSET SET-ELE', 
         steps=('Step-CRI', 'Step-REL1', 'Step-EXP', 'Step-REL2', ), 
         __linkedVpName__='Viewport: 1')
     session.XYDataFromHistory(name='ALLKE PI: STENT-1 ELSET SET-ALL-1', odb=odb, 
@@ -122,9 +113,13 @@ def odb_to_STL(stl_dir):
         farPlane=80.365, width=15.4369, height=7.02444, viewOffsetX=0.189971, 
         viewOffsetY=-0.0747198)
     session.linkedViewportCommands.setValues(_highlightLinkedViewports=True)
+    session.mdbData.summary()
+    odb = session.odbs['C:/Users/z5713258/SVMG_MasterThesis/FEA/CylExpansion/Results/ArteryCriExp_MS1e06_T9/ArteryCriExp_MS1e06_T9.odb']
+    session.viewports['Viewport: 1'].setValues(displayedObject=odb)
     leaf = dgo.LeafFromElementSets(elementSets=("ARTERY-1.SET-ALL", 
         "STENT-1.SET-ALL", ))
     session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
+def def2(stl_dir):
     import stlExport_kernel
     stlExport_kernel.STLExport(moduleName='Visualization', 
         stlFileName=stl_dir, 
@@ -174,8 +169,8 @@ def RR_Diameter(case_folder):
 
 def main(case_folder,odb_name,stl_dir):
     importODB(case_folder,odb_name) 
-    EnergyRatios(case_folder, odb_name)
-    writeCSV(case_folder, odb_name)
+    #EnergyRatios(case_folder, odb_name)
+    #writeCSV(case_folder, odb_name)
     odb_to_STL(stl_dir)
 
 if __name__ == "__main__":

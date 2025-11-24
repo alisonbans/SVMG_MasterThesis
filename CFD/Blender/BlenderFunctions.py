@@ -24,18 +24,18 @@ def artery_to_surface(stl_path):
     bpy.ops.mesh.select_all(action='DESELECT')
 
     #Delete balloon and crimping surface
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=2049942)
+    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=2124551)
     bpy.ops.mesh.delete(type='FACE')
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=2129508)
+    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1636454)
     bpy.ops.mesh.delete(type='FACE')
 
     # Separate the artery and the stent and rename them independently
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1532902)
+    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1648737)
     bpy.ops.mesh.separate(type='SELECTED')
-    bpy.context.active_object.name = "STENT"
+    bpy.context.active_object.name = "STENTED"
     for obj in bpy.context.selected_objects:
         if obj != bpy.context.active_object:
-            obj.name = "STENTED"
+            obj.name = "STENT"
 
 
     # Delete artery extermities
@@ -68,7 +68,7 @@ def artery_elongation():
     bpy.ops.mesh.select_mode(type="FACE")
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
-        plane_co=(0, 0, 2.0),   # Z = 2.0, XY plane parallel
+        plane_co=(0, 0, 1.5),   # Z = 2.0, XY plane parallel
         plane_no=(0, 0, 1),     # Normal along Z
         xstart=0, xend=1000,    # Dummy viewport coords
         ystart=0, yend=1000,
@@ -87,7 +87,7 @@ def artery_elongation():
     bpy.ops.mesh.select_mode(type="FACE")
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
-        plane_co=(0, 0,20.0),   # Z = 2.0, XY plane parallel
+        plane_co=(0, 0,20.5),   # Z = 2.0, XY plane parallel
         plane_no=(0, 0, 1),     # Normal along Z
         xstart=0, xend=1000,    # Dummy viewport coords
         ystart=0, yend=1000,
@@ -209,7 +209,7 @@ def select_and_fill_loop(obj_name, edge_index, new_obj_name):
     #bpy.ops.object.mode_set(mode='OBJECT')
 def export(case):
     # Set your export directory
-    export_dir = "C:/Users/z5713258/SVMG_MasterThesis/CFD/CFD_STL_input"
+    export_dir = "C:/Users/z5713258/SVMG_MasterThesis/CFD/Blender/Results"
     case_dir = os.path.join(export_dir, case)
     # Create the directory if it doesn't exist
     if not os.path.exists(case_dir):
