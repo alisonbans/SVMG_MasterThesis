@@ -88,13 +88,13 @@ In Solidworks, go to Settings > Export > STEP and make sure 'Split periodic face
 
 1. Make sure all file directories are specific to your usage. 
 
-2. Go to main.py, adapt your design intervals, run the file and follow the instructions in the terminal. You will be prompted to ....:
-    a. Create the sets and surfaces for the stent design.
-    b. Launch the free expansion simulations 
-    c. Launch the in-artery simulations
-    d. Export the STL file of the final configuration 
-    e. Save the definitions files in your workbench environment
-    f. Insert the area of low endothelial shear stress 
+2. Go to main.py, adapt your design intervals, run the file and follow the instructions in the terminal. You will be prompted to ....:   
+    a. Create the sets and surfaces for the stent design.   
+    b. Launch the free expansion simulations    
+    c. Launch the in-artery simulations   
+    d. Export the STL file of the final configuration    
+    e. Save the definitions files in your workbench environment  
+    f. Insert the area of low endothelial shear stress   
 
 
 
