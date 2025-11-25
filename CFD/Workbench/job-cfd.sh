@@ -19,6 +19,6 @@ module load ansys_licence/unsw
 # https://opus.nci.org.au/display/Help/PBS+Directives+Explained
  
 export CFX5_OPENMPI_DIR=$OPENMPI_ROOT
-cfx5solve -batch -def "b100dd-steady.def" -part $PBS_NCPUS -start-method Gadi_openmpi
-cfx5solve -batch -continue-from-file "b100dd-steady_001.res" -def "b100dd-trans1.def" -part $PBS_NCPUS -start-method Gadi_openmpi
-cfx5solve -batch -continue-from-file "b100dd-trans1_001.res" -def "b100dd-trans2.def" -part $PBS_NCPUS -start-method Gadi_openmpi
+cfx5solve -batch -def "STEADY.def" -part $PBS_NCPUS -start-method Gadi_openmpi
+cfx5solve -batch -continue-from-file "STEADY_001.res" -def "TRANS1.def" -part $PBS_NCPUS -start-method Gadi_openmpi
+cfx5solve -batch -continue-from-file "TRANS1_001.res" -def "TRANS2.def" -part $PBS_NCPUS -start-method Gadi_openmpi

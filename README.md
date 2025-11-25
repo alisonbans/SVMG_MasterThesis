@@ -1,62 +1,18 @@
 # Stent Geometry Builders for Independent Ring (IR) and Helical Stent (HS) Designs
 
-## Citing This Work
+## Citing Previous Work
 
-If you use these geometry builders in your research, please cite the paper and the software.
+[Kapoor et al.](https://github.com/ankushkapoor2003/stent_geometry_builder) 's work on stent geometry builder has used in order to generate the geometries assessed in this multi-objective optimisation framework. The authour's README file has also been used as a basis for this one to get a thourough set of instructions.
 
-Research paper citations:
-```
-@article{Kapoor2025Surrogate,
-    author = {Kapoor, Ankush and Ray, Tapabrata and Jepson, Nigel and Beier, Susann},
-    title = {A Surrogate-Assisted Multiconcept Optimization Framework for Real-World Engineering Design},
-    journal = {Journal of Mechanical Design},
-    volume = {147},
-    number = {12},
-    pages = {121701},
-    year = {2025},
-    month = {05},
-    issn = {1050-0472},
-    doi = {10.1115/1.4068404},
-    url = {https://doi.org/10.1115/1.4068404},
-    eprint = {https://asmedigitalcollection.asme.org/mechanicaldesign/article-pdf/147/12/121701/7459273/md-24-1837.pdf},
-}
-```
+Kapoor, A., Ray, T., Jepson, N. and Beier, S. (2025) ‘A surrogate-assisted multiconcept optimization framework for real-world engineering design’, Journal of Mechanical Design, 147(12), pp. 121701. doi:10.1115/1.4068404.
 
-```
-@article{Kapoor2024Comprehensive,
-    author = {Kapoor, Ankush and Ray, Tapabrata and Jepson, Nigel and Beier, Susann},
-    title = "{Comprehensive Geometric Parameterization and Computationally Efficient 3D Shape Matching Optimization of Realistic Stents}",
-    journal = {Journal of Mechanical Design},
-    pages = {1-24},
-    year = {2024},
-    month = {10},
-    issn = {1050-0472},
-    doi = {10.1115/1.4066961},
-    url = {https://doi.org/10.1115/1.4066961},
-    eprint = {https://asmedigitalcollection.asme.org/mechanicaldesign/article-pdf/doi/10.1115/1.4066961/7390188/md-24-1477.pdf},
-}
-```
-Software citation:
-```
-@software{kapoor20243D,
-  author       = {Kapoor, Ankush and
-                  Ray, Tapabrata and
-                  Jepson, Nigel and
-                  Beier, Susann},
-  title        = {{3D geometry builder for Independent Ring and 
-                   Helical stent designs}},
-  month        = oct,
-  year         = 2025,
-  publisher    = {Zenodo},
-  version      = {0.0.2},
-  doi          = {10.5281/zenodo.15117426},
-  url          = {https://doi.org/10.5281/zenodo.15117426}
-}
-```
+Kapoor, A., Ray, T., Jepson, N. and Beier, S. (2024) ‘Comprehensive geometric parameterization and computationally efficient 3D shape matching optimization of realistic stents’, Journal of Mechanical Design, pp. 1–24. doi:10.1115/1.4066961.
+
+Kapoor, A., Ray, T., Jepson, N. and Beier, S. (2025) 3D geometry builder for independent ring and helical stent designs. Version 0.0.2. Zenodo. doi:10.5281/zenodo.15117426.
 
 ## Overview
 
-This repository contains the geometry builders for the IR1, IR2, HS1, and HS2 stent designs. These tools allow for the automated generation and customization of stent geometries based on specific input parameters.
+This repository contains the geometry builders for HS1 stent design. These tools allow for the automated generation and customization of stent geometries based on specific input parameters.
 
 ## Setup Instructions
 
@@ -67,6 +23,11 @@ The geometry builder requires the following software to be installed.
 - **MATLAB2023b** 
 - **Anaconda**
 -  **Solidworks 2024**
+- **Abaqus 2025**
+- **Blender 4.5**
+- **Ansys 2024 R2 - Fluent and Workbench**
+- **VSCode** or any other python IDE
+
 
 The builder is tested only on the software versions listed above.
 
@@ -119,18 +80,21 @@ NB:
 
 Please note that the python library assumes that solidworks is installed in the default location i.e. "C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe". if the solidworks executable is at a different location, change the location in the solidworks library file located at "\stent geometry builder location\Solidworks_Library\sld_interface\sld_interface\sld.py", line 11. 
 
-Similarly, the default solidworks template used for loading new document is assumed at the location "C:\ProgramData\SolidWorks\SOLIDWORKS 2024\templates\Part.prtdot". Kindly update line 478 in sld.py if the location is different. 
+Similarly, the default solidworks template used for loading new document is assumed at the location "C:\ProgramData\SolidWorks\SOLIDWORKS 2024\templates\Part.prtdot". Kindly update line 478 in sld.py if the location is different. This template needs to be set up within solidworks as well (Solidworks > Settings > Default Templates).
 
-## Using Geometry builder to create stent designs
+In Solidworks, go to Settings > Export > STEP and make sure 'Split periodic faces' is not selected.  
 
-1. Navigate to the cloned geometry builder directory in windows explorer:
+## Usage instructions
 
-2. Open the corresponding matlab file for IR stent (Main_IR1) or Helical stent (Main_HS1)
+1. Make sure all file directories are specific to your usage. 
 
-3. Either keep or modify the baseline design variable values (x) in the matlab script
+2. Go to main.py, adapt your design intervals, run the file and follow the instructions in the terminal. You will be prompted to ....:
+    a. Create the sets and surfaces for the stent design.
+    b. Launch the free expansion simulations 
+    c. Launch the in-artery simulations
+    d. Export the STL file of the final configuration 
+    e. Save the definitions files in your workbench environment
+    f. Insert the area of low endothelial shear stress 
 
-4. Run the matlab script
-
-5. Three stent CAD files - Solidworks part file (.SLDPRT), neutral parasolid file (.x_t) and a stl file (.STL) will be saved in the corresponding results folder for IR stent (IR1_Results) or HS stent (HS1_Results)
 
 

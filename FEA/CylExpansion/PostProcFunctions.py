@@ -110,7 +110,13 @@ def writeCSV(case_folder, odb_name):
         session.writeFieldReport(fileName=file_name, append=OFF, 
             sortItem='Node Label', odb=odb, step=step_nb, frame=frame_nb, outputPosition=NODAL, 
             variable=(('U', NODAL), ), stepFrame=SPECIFY)
-    #odb.close()
+    
+    
+    odb = session.odbs[odb_location]
+    session.viewports['Viewport: 1'].setValues(displayedObject=odb)
+    leaf = dgo.LeafFromElementSets(elementSets=("ARTERY-1.SET-ALL", 
+        "STENT-1.SET-ALL", ))
+    session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
 
 def odb_to_STL(stl_dir):
     odb_location = rf"{case_folder}\{odb_name}"
@@ -171,7 +177,7 @@ def diameter(step, case_folder):
     # External diameter
     external_diameter = 2 * radii.max()
     diameter = external_diameter
-    print(f"{step}: Approx. external diameter = {external_diameter:.8f} units")
+    #print(f"{step}: Approx. external diameter = {external_diameter:.8f} units")
 
     return diameter
 def RR_Diameter(case_folder):
@@ -186,7 +192,7 @@ def main(case_folder,odb_name,stl_dir):
     importODB(case_folder,odb_name) 
     EnergyRatios(case_folder, odb_name)
     writeCSV(case_folder, odb_name)
-    odb_to_STL(stl_dir)
+    #odb_to_STL(stl_dir)
 
 if __name__ == "__main__":
     input = str(sys.argv[-1])
