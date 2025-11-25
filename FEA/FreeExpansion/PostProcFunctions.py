@@ -52,7 +52,21 @@ def EnergyRatios(case_folder,odb_name):
     session.printOptions.setValues(vpBackground=OFF)
     session.printToFile(fileName=file_name, format=PNG, canvasObjects=(vp,))
 
-
+    """o7 = session.odbs[odb_location]
+    session.viewports['Viewport: 1'].setValues(displayedObject=o7)
+    xyp = session.XYPlot('XYPlot-1')
+    chartName = xyp.charts.keys()[0]
+    chart = xyp.charts[chartName]
+    xy1 = session.xyDataObjects['StentEnergyRatio']
+    c1 = session.Curve(xyData=xy1)
+    chart.setValues(curvesToPlot=(c1, ), )
+    session.charts[chartName].autoColor(lines=True, symbols=True)
+    session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+    session.mdbData.summary()"""
+    x0 = session.xyDataObjects['StentEnergyRatio']
+    session.writeXYReport(fileName= os.path.join(case_folder, 'StentEnergyRatio.csv'), xyData=(x0, ))
+    odb.close()
+    sys.exit(0)
 def main(case_folder,odb_name):
     importODB(case_folder,odb_name) 
     EnergyRatios(case_folder, odb_name)

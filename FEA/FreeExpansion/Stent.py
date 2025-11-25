@@ -31,7 +31,7 @@ def template(template,stent_location):
     c = p.cells
     f = p.faces
     p.generateBottomUpSweptMesh(cell=c[0], targetSide=f[11], 
-        geometrySourceSide=pickedGeomSourceSide, numberOfLayers=1)
+        geometrySourceSide=pickedGeomSourceSide, numberOfLayers=3)
     a = mdb.models['Model-1'].rootAssembly
     a.Instance(name='STENT-1', part=p, dependent=ON)
     a = mdb.models['Model-1'].rootAssembly

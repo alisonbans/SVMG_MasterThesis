@@ -36,6 +36,7 @@ def lhs(N):
     df = pd.DataFrame(design_space, columns=var_names)
     # Add a 'Label' column filled with NaN
     df['DesignLabel'] = np.nan
+    df[['NUS', 'SW', 'ST']] = df[['NUS', 'SW', 'ST']].astype(int)
     # Save to CSV
     csv_path = 'DesignSpace.csv'
     df.to_csv(csv_path, index=False)
@@ -59,6 +60,3 @@ def lhs(N):
     plt.tight_layout()
     plt.show()
     plt.close()
-    
-
-lhs(15)

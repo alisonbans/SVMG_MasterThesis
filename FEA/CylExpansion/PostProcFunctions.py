@@ -12,8 +12,8 @@ import os
 def importODB(case_folder,odb_name):
     old_odb = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{odb_name}"
     new_job = rf"{case_folder}\{odb_name}"
-    #cmd = f'abaqus upgrade -job {new_job} -odb "{old_odb}"'
-    #os.system(cmd)  
+    cmd = f'abaqus upgrade -job {new_job} -odb "{old_odb}"'
+    os.system(cmd)  
     from  abaqus import session
     session.mdbData.summary()
     o1 = session.openOdb(
@@ -70,8 +70,21 @@ def EnergyRatios(case_folder,odb_name):
         session.printOptions.setValues(vpBackground=OFF)
         session.printToFile(fileName=file_name, format=PNG, canvasObjects=(vp,))
 
-        print(f"Saved plot: {file_name}")
-    
+        """o7 = session.odbs[odb_location]
+        session.viewports['Viewport: 1'].setValues(displayedObject=o7)
+        xyp = session.XYPlot(f'Plot-{ratio_name}')
+        chartName = xyp.charts.keys()[0]
+        chart = xyp.charts[chartName]
+        xy1 = session.xyDataObjects[ratio_name]
+        c1 = session.Curve(xyData=xy1)
+        chart.setValues(curvesToPlot=(c1, ), )
+        session.charts[chartName].autoColor(lines=True, symbols=True)
+        session.viewports['Viewport: 1'].setValues(displayedObject=xyp)
+        session.mdbData.summary()"""
+        x0 = session.xyDataObjects[ratio_name]
+        session.writeXYReport(fileName= os.path.join(case_folder, f'{ratio_name}.csv'), xyData=(x0, ))
+    odb.close()
+    #sys.exit(0)
 def writeCSV(case_folder, odb_name):
     odb_location = rf"{case_folder}\{odb_name}"
     session.mdbData.summary()
@@ -100,6 +113,7 @@ def writeCSV(case_folder, odb_name):
     #odb.close()
 
 def odb_to_STL(stl_dir):
+    odb_location = rf"{case_folder}\{odb_name}"
     session.viewports['Viewport: 1'].animationController.setValues(
         animationType=NONE)
     session.viewports['Viewport: 1'].animationController.setValues(
@@ -114,12 +128,12 @@ def odb_to_STL(stl_dir):
         viewOffsetY=-0.0747198)
     session.linkedViewportCommands.setValues(_highlightLinkedViewports=True)
     session.mdbData.summary()
-    odb = session.odbs['C:/Users/z5713258/SVMG_MasterThesis/FEA/CylExpansion/Results/ArteryCriExp_MS1e06_T9/ArteryCriExp_MS1e06_T9.odb']
+    odb = session.odbs[odb_location]
     session.viewports['Viewport: 1'].setValues(displayedObject=odb)
     leaf = dgo.LeafFromElementSets(elementSets=("ARTERY-1.SET-ALL", 
         "STENT-1.SET-ALL", ))
     session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
-def def2(stl_dir):
+
     import stlExport_kernel
     stlExport_kernel.STLExport(moduleName='Visualization', 
         stlFileName=stl_dir, 
@@ -164,13 +178,14 @@ def RR_Diameter(case_folder):
     d_exp = diameter('Step-EXP', case_folder)
     d_rel = diameter('Step-REL2', case_folder)
     d_shrinkage =d_exp-d_rel
-    print(case_folder)
-    print(f'Diameter Shrinkage = {d_shrinkage}')
+    #print(case_folder)
+    #print(f'Diameter Shrinkage = {d_shrinkage}')
+    return d_shrinkage
 
 def main(case_folder,odb_name,stl_dir):
     importODB(case_folder,odb_name) 
-    #EnergyRatios(case_folder, odb_name)
-    #writeCSV(case_folder, odb_name)
+    EnergyRatios(case_folder, odb_name)
+    writeCSV(case_folder, odb_name)
     odb_to_STL(stl_dir)
 
 if __name__ == "__main__":
