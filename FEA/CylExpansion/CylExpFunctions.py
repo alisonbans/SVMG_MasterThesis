@@ -52,7 +52,7 @@ def cylinder_cri(model, name='CYL-CRI'):
     s.setPrimaryObject(option=STANDALONE)
     s.CircleByCenterPerimeter(center=(0.0, 0.0), point1=(13.75, -1.25))
     s.ObliqueDimension(vertex1=v[0], vertex2=v[1], textPoint=(-2.43898773193359, 
-        -23.2342948913574), value=2)
+        -23.2342948913574), value=1.7)
     p = mdb.models[model].Part(name=name, dimensionality=THREE_D, 
         type=DEFORMABLE_BODY)
     p = mdb.models[model].parts[name]
@@ -74,7 +74,7 @@ def cylinder_cri(model, name='CYL-CRI'):
     p.Set(elements=elements, name='SET-ELE')
     s = p.elements
     side2Elements = s.getSequenceFromMask(mask=('[#ffffffff:3443 #1fff ]', ), )
-    p.Surface(side1Elements=side2Elements, name='SURF-IN')
+    p.Surface(side2Elements=side2Elements, name='SURF-IN')
     # Selection Assignment
     name_surf_selection = 'Selection-'+name
     mdb.models[model].SurfaceSection(name=name_surf_selection, useDensity=ON, 
@@ -280,7 +280,7 @@ def assembly_cylexp(model):
     p = mdb.models[model].parts['STENT']
     a.Instance(name='STENT-1', part=p, dependent=ON)
     a.translate(instanceList=('ARTERY-1', ), vector=(0.0, 0.0, -4.0))   
-def cyl_exp_addons(model, deltaT = 1e-06):
+def cyl_exp_addons(model, deltaT = 2e-06):
 
     cyl_cri = mdb.models[model].parts['CYL-CRI']
     cyl_cri.DatumCsysByThreePoints(name='Dat-CYL', coordSysType=CYLINDRICAL, origin=(0.0, 
@@ -385,7 +385,7 @@ def cyl_exp_addons(model, deltaT = 1e-06):
     mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
         stepName='Step-REL1', removePairs=((cri_in, stent_out), ))
     mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
-        stepName='Step-EXP', addPairs=((stent_out, artery_in), (exp_out, stent_in), ))
+        stepName='Step-EXP', addPairs=((stent_all, artery_in), (exp_out, stent_in), ))
     mdb.models[model].interactions['STENT_ARTERY_CYL'].includedPairs.setValuesInStep(
         stepName='Step-REL2', removePairs=((exp_out, stent_in), ))
     # Add amplitudes 
@@ -404,14 +404,15 @@ def cyl_exp_addons(model, deltaT = 1e-06):
     mdb.models[model].Pressure(name='STENT-VISC', createStepName='Step-CRI', 
         region=region, distributionType=VISCOUS, field='', magnitude=0.0006, 
         amplitude=UNSET)
-    region = a.instances['CYL-CRI-1'].sets['SET-NODE']
+    region = a.instances['CYL-EXP-1'].sets['SET-NODE']
     datum = mdb.models[model].rootAssembly.instances['CYL-CRI-1'].datums[6]
     mdb.models[model].DisplacementBC(name='CYL-EXP', createStepName='Step-EXP', 
-        region=region, u1=1.2, u2=UNSET, u3=UNSET, ur1=UNSET, ur2=UNSET, 
+        region=region, u1=1.35, u2=UNSET, u3=UNSET, ur1=UNSET, ur2=UNSET, 
         ur3=UNSET, amplitude='AMP-EXP', fixed=OFF, 
         distributionType=UNIFORM, fieldName='', localCsys=datum)
+    region = a.instances['CYL-CRI-1'].sets['SET-NODE']
     mdb.models[model].DisplacementBC(name='CYL-CRI', 
-        createStepName='Step-CRI', region=region, u1=-1.54, u2=UNSET, u3=UNSET, 
+        createStepName='Step-CRI', region=region, u1=-1.24, u2=UNSET, u3=UNSET, 
         ur1=UNSET, ur2=UNSET, ur3=UNSET, amplitude='AMP-CRI', 
         distributionType=UNIFORM, fieldName='', localCsys=datum)
     region = a.instances['ARTERY-1'].sets['SET-NODE']

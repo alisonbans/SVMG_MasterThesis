@@ -74,7 +74,7 @@ def FreeExp_AddOns(model):
     mdb.models[model].ExplicitDynamicsStep(name='Step-EXP', previous='Initial', 
         timePeriod=0.3, improvedDtMethod=ON)
     mdb.models[model].steps['Step-EXP'].setValues(timePeriod=0.3, massScaling=(
-        (SEMI_AUTOMATIC, MODEL, THROUGHOUT_STEP, 0.0, 1e-05, BELOW_MIN, 1, 0, 
+        (SEMI_AUTOMATIC, MODEL, THROUGHOUT_STEP, 0.0, 1e-06, BELOW_MIN, 1, 0, 
         0.0, 0.0, 0, None), ), improvedDtMethod=ON)
     mdb.models[model].ExplicitDynamicsStep(name='Step-REL', previous='Step-EXP', 
         timePeriod=0.05, improvedDtMethod=ON)

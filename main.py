@@ -120,14 +120,15 @@ for design_nb in range(0,N):
         content = file.read()
     content = content.replace("POT2", job_name_full)
     content = content.replace("walltime=24:00:00", "walltime=01:00:00")
-    content = content.replace("ncpus=48", "ncpus=12")
+    content = content.replace("ncpus=48", "ncpus=48")
     with open(target_sh, 'w', newline='\n') as file:
         file.write(content)
 
-design_space.to_csv(design_space_csv, index=False)"""
+design_space.to_csv(design_space_csv, index=False)
 design_space = pd.read_csv(design_space_csv)
 design_space['EnergyRatioFE'] = np.nan
 input("Press enter when free expansion odb files are available ...")
+design_space = pd.read_csv(design_space_csv)
 # ------------------------------------------------------------------------------------------------
 # 3. CYLINDER EXPANSION --------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
@@ -151,23 +152,33 @@ for design_nb in range(0,N):
 
     df = pd.read_csv(os.path.join(case_folder, 'StentEnergyRatio.csv'),sep=r"\s+")
     df['StentEnergyRatio'] = pd.to_numeric(df['StentEnergyRatio'], errors='coerce')
-    max_ratio = df['StentEnergyRatio'].max()
+    df['X'] = pd.to_numeric(df['X'], errors='coerce')
+    df_exp = df[(df['X'] > 0.15) & (df['X'] < 0.45)]
+    max_ratio = df_exp['StentEnergyRatio'].max()
     design_space.loc[design_nb,'EnergyRatioFE'] = max_ratio
     # --------------------------------------------------------------------------------------------
     # 3.2 PREPARE CYLINDER EXPANSION FILES ------------------------------------------------------
     # --------------------------------------------------------------------------------------------
     job_name = f"CylExp_{case}"
     job_name_full = f"CylExpFull_{case}"
-    exp_stent_location = os.path.join(FreeExp_folder,'Results',{case}, f'FreeExpFull_{case}.odb')
+    exp_stent_location = os.path.join(FreeExp_folder,'Results',case, f'FreeExpFull_{str(case)}.odb')
     command3 = f'abaqus cae noGUI="{cylexp_functions}" -- "{exp_stent_location},{job_name},{job_name_full}"'
     proc3 = subprocess.Popen(command3, shell=True, cwd=working_dir_ce)
     proc3.wait()
-
-design_space.to_csv(design_space_csv, index=False)
+    target_sh = os.path.join(os.path.join(FreeExp_folder,'INP'), f"run_{case}.sh")
+    with open(fea_sh_template, 'r', newline='\n') as file:
+        content = file.read()
+    content = content.replace("POT2", job_name_full)
+    content = content.replace("walltime=24:00:00", "walltime=06:00:00")
+    content = content.replace("ncpus=48", "ncpus=24")
+    with open(target_sh, 'w', newline='\n') as file:
+        file.write(content)
+"""
+#design_space.to_csv(design_space_csv, index=False)
 design_space = pd.read_csv(design_space_csv)
-design_space['EnergyRatioCE'] = np.nan
+r"""design_space['EnergyRatioCE'] = np.nan
 design_space['RRabs'] = np.nan
-input("Press enter when cylinder expansion odb files are available ...")
+input("Press enter when cylinder expansion odb files are available ...")"""
 # ------------------------------------------------------------------------------------------------
 # 4. CARRY OUT POST-PROCESSING OF THE FEA AND PREPARE CFD FILES ----------------------------------
 # ------------------------------------------------------------------------------------------------
@@ -185,7 +196,7 @@ for design_nb in range(0,N):
     case_folder = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}"
     os.makedirs(case_folder, exist_ok=True)
     odb_name = f'CylExpFull_{case}.odb'
-
+    r"""
     stl_file = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}\{case}.stl"
     command4 = f'abaqus cae script="{ce_pp}" -- "{case_folder},{odb_name},{stl_file}"'
     proc4 = subprocess.Popen(command4, shell=True, cwd=working_dir_fea)
@@ -203,15 +214,17 @@ for design_nb in range(0,N):
     # --------------------------------------------------------------------------------------------
     # 4.2 RUN BLENDER, FLUENT & WORKBENCH --------------------------------------------------------
     # --------------------------------------------------------------------------------------------
-    run_in_blender(case, stl_file)
+    run_in_blender(case, stl_file) 
+    input("Press enter once the blender part is checked ....")
     main_fluent(case)
+    input("Check mesh and press enter when done ...")
     mesh_path = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Fluent/Mesh/{case}.msh"
     wbpj_save_path =  rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}.wbpj"
     main_wb(mesh_path, wbpj_save_path)
     input(f"Press enter when the definition files are ready for {case}...")
     working_dir =  r"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory"
     move_def_files(working_dir, case)
-    shutil.copy(cfd_sh_template, os.path.join(r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\\Workbench\\INP', case))
+    shutil.copy(cfd_sh_template, os.path.join(r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\\Workbench\\INP', case))"""
 
 design_space.to_csv(design_space_csv, index=False)
 design_space = pd.read_csv(design_space_csv)
@@ -227,12 +240,12 @@ for design_nb in range(0,N):
     SW = design_space['SW'].iloc[design_nb]
     ST = design_space['ST'].iloc[design_nb]
     case = f'NUS{NUS}_SW{SW}_ST{ST}'
-    old_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}.wbpj"
-    new_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp.wbpj"
-    res = rf'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench\\Results\\{case}\\TRANS2_001.res'
+    old_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6.wbpj"
+    new_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6_pp.wbpj"
+    res = rf'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench\\Results\\{case}_e6\\TRANS2_001.res'
     main_wb_pp(old_wbpj, new_wbpj, res)
-    shutil.move(new_wbpj, rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
-    shutil.move(rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp_files", rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
+    shutil.move(new_wbpj, rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}_e6')
+    shutil.move(rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6_pp_files", rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}_e6')
     lowESS = float(input(f"Write down the area of low ESS for {case}: "))
     design_space.loc[design_nb,'lowESSpercentArea'] = lowESS
 

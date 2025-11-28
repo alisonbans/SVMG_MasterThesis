@@ -7,7 +7,7 @@
 #PBS -l jobfs=300GB
 #PBS -l software=unsw_ansys
 #PBS -l wd
-#PBS -M a.colombo@unsw.edu.au
+#PBS -M a.bans@student.unsw.edu.au
 #PBS -m abe
  
 # Load modules, always specify version number.
