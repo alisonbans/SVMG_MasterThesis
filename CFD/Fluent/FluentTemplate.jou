@@ -9,11 +9,11 @@
 /material-point/create-material-point mp 0 0 0
 ;;
 ;; Sizing of superficial mesh - controls parameters
-/size-functions/set-global-controls 0.00625 0.6 1.2
-/size-functions/create curvature face (STENTED STENT) curvature1 0.00625 0.05 1.2 10
-/size-functions/create curvature face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) curvature2 0.09 0.6 1.2 10
-/size-functions/create proximity face (STENTED STENT) proximity1 0.00625 0.05 1.2 3 face-face n y
-/size-functions/create proximity face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) proximity2 0.09 0.6 1.2 3 face-face n y
+/size-functions/set-global-controls 0.0125 0.6 1.2
+/size-functions/create curvature face (STENTED STENT) curvature1 0.0125 0.05 1.2 10
+/size-functions/create curvature face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) curvature2 0.18 0.6 1.2 10
+/size-functions/create proximity face (STENTED STENT) proximity1 0.0125 0.05 1.2 3 face-face n y
+/size-functions/create proximity face (DISTAL DISTAL_EXT PROXIMAL PROXIMAL_EXT INLET OUTLET) proximity2 0.18 0.6 1.2 3 face-face n y
 /size-functions/list
 /scoped-sizing/compute
 ;;

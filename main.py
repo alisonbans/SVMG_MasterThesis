@@ -6,7 +6,7 @@ import os
 import sys
 import pandas as pd
 from pathlib import Path
-from FEA.CylExpansion.PostProcFunctions import RR_Diameter
+from FEA.CylExpansion.PostProcFunctions import radial_recoil
 from CFD.Blender.BlenderExe import run_in_blender
 from CFD.Fluent.FluentExe import main_fluent
 from CFD.Workbench.WorkbenchExe import main_wb, move_def_files
@@ -39,10 +39,11 @@ ce_pp = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\CylExpansion\\PostProcFun
 working_dir_ce = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\FEA\\CylExpansion\\INP'
 cfd_sh_template = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\\Workbench\\job-cfd.sh'
 wb_folder = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench'
+
 wb_results = os.path.join(wb_folder, 'Results')
 design_space_csv = r"C:\Users\z5713258\SVMG_MasterThesis\DesignSpace.csv"
 design = [19, 0.46, 18, 0.95, 0.1, 1.63339, 0.39003, 0.75959, 0.81258, 1.31384, 0.04872, 0.00164, 0.07540, 0.61571, 4.16285, 1.79921, 0.06, 0.06]
-N = 1
+N = 10
 
 # ------------------------------------------------------------------------------------------------
 # 1. LATIN HYPERCUBE SAMPLING --------------------------------------------------------------------
@@ -81,11 +82,15 @@ for design_nb in range(0,N):
     design_space.loc[design_nb, 'DesignLabel'] = status
     if status == 0:
         continue
+    
+    if design_space['DesignLabel'].iloc[design_nb] ==0:
+        continue
     step = f'stent_{case}.STEP'
+    print(step)
     step_1 = os.path.join(matlab_folder_HS1_results, step)
     step_2 = os.path.join(step_folder, step)
     shutil.move(step_1, step_2)
-
+    
     # -------------------------------------------------------------------------------------------
     # 2.2 CREATE THE STENT MESH, SETS & SURFACES ------------------------------------------------
     # -------------------------------------------------------------------------------------------
@@ -104,7 +109,7 @@ for design_nb in range(0,N):
         answer = input("Press enter when the mesh is available \nTo force exit this loop type: out ... ")
         if answer.strip().lower() == 'out':
             break
-    
+
     # -------------------------------------------------------------------------------------------
     # 2.3 PREPARE FREE EXPANSION FILES ----------------------------------------------------------
     # -------------------------------------------------------------------------------------------
@@ -165,7 +170,7 @@ for design_nb in range(0,N):
     command3 = f'abaqus cae noGUI="{cylexp_functions}" -- "{exp_stent_location},{job_name},{job_name_full}"'
     proc3 = subprocess.Popen(command3, shell=True, cwd=working_dir_ce)
     proc3.wait()
-    target_sh = os.path.join(os.path.join(FreeExp_folder,'INP'), f"run_{case}.sh")
+    target_sh = os.path.join(os.path.join(CylExp_folder,'INP'), f"run_{case}.sh")
     with open(fea_sh_template, 'r', newline='\n') as file:
         content = file.read()
     content = content.replace("POT2", job_name_full)
@@ -173,16 +178,16 @@ for design_nb in range(0,N):
     content = content.replace("ncpus=48", "ncpus=24")
     with open(target_sh, 'w', newline='\n') as file:
         file.write(content)
-"""
-#design_space.to_csv(design_space_csv, index=False)
+
+design_space.to_csv(design_space_csv, index=False)"""
 design_space = pd.read_csv(design_space_csv)
-r"""design_space['EnergyRatioCE'] = np.nan
-design_space['RRabs'] = np.nan
-input("Press enter when cylinder expansion odb files are available ...")"""
+#design_space['EnergyRatioCE'] = np.nan
+#design_space['RRabs'] = np.nan
+input("Press enter when cylinder expansion odb files are available ...")
 # ------------------------------------------------------------------------------------------------
 # 4. CARRY OUT POST-PROCESSING OF THE FEA AND PREPARE CFD FILES ----------------------------------
 # ------------------------------------------------------------------------------------------------
-for design_nb in range(0,N):
+for design_nb in range(4,N):
     if design_space['DesignLabel'].iloc[design_nb] ==0:
         continue
     NUS = design_space['NUS'].iloc[design_nb]
@@ -196,25 +201,27 @@ for design_nb in range(0,N):
     case_folder = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}"
     os.makedirs(case_folder, exist_ok=True)
     odb_name = f'CylExpFull_{case}.odb'
-    r"""
+    
     stl_file = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}\{case}.stl"
-    command4 = f'abaqus cae script="{ce_pp}" -- "{case_folder},{odb_name},{stl_file}"'
+    r"""command4 = f'abaqus cae script="{ce_pp}" -- "{case_folder},{odb_name},{stl_file}"'
     proc4 = subprocess.Popen(command4, shell=True, cwd=working_dir_fea)
     proc4.wait()
-    input("Press enter when the stl is available ...")
-    rr_abs = RR_Diameter(case_folder)
+    while not os.path.isfile(stl_file):
+        input("STL file does not exist ...")
+    rr_abs = radial_recoil(case_folder)
     df = pd.read_csv(os.path.join(case_folder, 'StentEnergyRatio.csv'),sep=r"\s+")
     df['StentEnergyRatio'] = pd.to_numeric(df['StentEnergyRatio'], errors='coerce')
     df['X'] = pd.to_numeric(df['X'], errors='coerce')
-    df_exp = df[(df['X'] > 0.45) & (df['X'] < 0.9)]
+    df_exp = df[(df['X'] > 0.5) & (df['X'] < 1)]
     max_ratio_exp = df_exp['StentEnergyRatio'].max()
     design_space.loc[design_nb,'EnergyRatioCE'] = round(max_ratio_exp, 2) 
-    design_space.loc[design_nb,'RRabs'] = round(rr_abs,4)
-    design_space.to_csv(design_space_csv, index=False)
+    design_space.loc[design_nb,'RRabs'] = round(rr_abs,3)
+    design_space.to_csv(design_space_csv, index=False)"""
     # --------------------------------------------------------------------------------------------
     # 4.2 RUN BLENDER, FLUENT & WORKBENCH --------------------------------------------------------
     # --------------------------------------------------------------------------------------------
-    run_in_blender(case, stl_file) 
+    input("Press enter when blender model has been created ...")
+    run_in_blender(case,  rf'C:/Users/z5713258/SVMG_MasterThesis/CFD/Blender/{case}.blend') 
     input("Press enter once the blender part is checked ....")
     main_fluent(case)
     input("Check mesh and press enter when done ...")
@@ -224,7 +231,7 @@ for design_nb in range(0,N):
     input(f"Press enter when the definition files are ready for {case}...")
     working_dir =  r"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory"
     move_def_files(working_dir, case)
-    shutil.copy(cfd_sh_template, os.path.join(r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\\Workbench\\INP', case))"""
+    shutil.copy(cfd_sh_template, os.path.join(r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\\Workbench\\INP', case))
 
 design_space.to_csv(design_space_csv, index=False)
 design_space = pd.read_csv(design_space_csv)
@@ -240,12 +247,12 @@ for design_nb in range(0,N):
     SW = design_space['SW'].iloc[design_nb]
     ST = design_space['ST'].iloc[design_nb]
     case = f'NUS{NUS}_SW{SW}_ST{ST}'
-    old_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6.wbpj"
-    new_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6_pp.wbpj"
-    res = rf'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench\\Results\\{case}_e6\\TRANS2_001.res'
+    old_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}.wbpj"
+    new_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp.wbpj"
+    res = rf'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench\\Results\\{case}\\TRANS2_001.res'
     main_wb_pp(old_wbpj, new_wbpj, res)
-    shutil.move(new_wbpj, rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}_e6')
-    shutil.move(rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_e6_pp_files", rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}_e6')
+    shutil.move(new_wbpj, rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
+    shutil.move(rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp_files", rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
     lowESS = float(input(f"Write down the area of low ESS for {case}: "))
     design_space.loc[design_nb,'lowESSpercentArea'] = lowESS
 

@@ -1,9 +1,9 @@
 import bpy
 import os
 import sys
-def artery_to_surface(stl_path):
-    print('1')
-    if not bpy.context.active_object is None :
+
+def artery_to_surface():
+    """if not bpy.context.active_object is None :
         bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.ops.object.select_all(action='SELECT')
@@ -22,22 +22,25 @@ def artery_to_surface(stl_path):
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='FACE')
     bpy.ops.mesh.select_all(action='DESELECT')
-
+"""
     #Delete balloon and crimping surface
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=2124551)
-    bpy.ops.mesh.delete(type='FACE')
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1636454)
-    bpy.ops.mesh.delete(type='FACE')
+    # get the user to do this rather than doing it automatically then continue the code
+    #bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=2124551)
+    #bpy.ops.mesh.delete(type='FACE')
+    #bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1636454)
+    #bpy.ops.mesh.delete(type='FACE')
 
     # Separate the artery and the stent and rename them independently
-    bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1648737)
+    """bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=1648737)
     bpy.ops.mesh.separate(type='SELECTED')
     bpy.context.active_object.name = "STENTED"
     for obj in bpy.context.selected_objects:
         if obj != bpy.context.active_object:
             obj.name = "STENT"
 
-
+"""
+    bpy.ops.object.select_all(action='SELECT')
+    obj = bpy.context.selected_objects[0]
     # Delete artery extermities
     for threshold in [-4, 26]:
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -60,7 +63,6 @@ def artery_to_surface(stl_path):
     bpy.ops.mesh.select_linked_pick(deselect=False, delimit={'SEAM'}, object_index=0, index=735850)
     bpy.ops.mesh.delete(type='FACE')
 def artery_elongation():
-    print('2')
     artery = bpy.data.objects["STENTED"]
     bpy.context.view_layer.objects.active = artery
     artery.select_set(True)
@@ -68,7 +70,7 @@ def artery_elongation():
     bpy.ops.mesh.select_mode(type="FACE")
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
-        plane_co=(0, 0, 1.5),   # Z = 2.0, XY plane parallel
+        plane_co=(0, 0, 2.25),   # Z = 2.0, XY plane parallel
         plane_no=(0, 0, 1),     # Normal along Z
         xstart=0, xend=1000,    # Dummy viewport coords
         ystart=0, yend=1000,
@@ -87,7 +89,7 @@ def artery_elongation():
     bpy.ops.mesh.select_mode(type="FACE")
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
-        plane_co=(0, 0,20.5),   # Z = 2.0, XY plane parallel
+        plane_co=(0, 0,20.6),   # Z = 2.0, XY plane parallel
         plane_no=(0, 0, 1),     # Normal along Z
         xstart=0, xend=1000,    # Dummy viewport coords
         ystart=0, yend=1000,
@@ -166,7 +168,6 @@ def artery_elongation():
         new_obj.name = new_obj_name
 
 def select_and_fill_loop(obj_name, edge_index, new_obj_name):
-    print('3')
     obj = bpy.data.objects[obj_name]
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
@@ -242,20 +243,12 @@ def export(case):
             # Deselect the object after export
             obj.select_set(False)
 
-def main(case, stl_path):
-    artery_to_surface(stl_path)
+def main(case):
+    artery_to_surface()
     artery_elongation()
     select_and_fill_loop("PROXIMAL_EXT", 344, "INLET")
     select_and_fill_loop("DISTAL_EXT", 311, "OUTLET")
     export(case)
-
-"""if __name__ == "__main__":
-    input = str(sys.argv[-1])
-    input = input.split(',')
-    case = input[0]
-    stl_path = input[1]
-    main(case, stl_path)
-"""
 
 if __name__ == "__main__":
     # Extract arguments after '--'
@@ -268,7 +261,7 @@ if __name__ == "__main__":
     # Parse into dictionary
     params = dict(arg.split("=") for arg in custom_args)
     case = params.get("case")
-    stl_path = params.get("stl")
+    #stl_path = params.get("stl")
 
-    print(f"Running main with case={case}, stl_path={stl_path}")
-    main(case, stl_path)
+    print(f"Running main with case={case}")
+    main(case)

@@ -118,75 +118,51 @@ def writeCSV(case_folder, odb_name):
         "STENT-1.SET-ALL", ))
     session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
 
-def odb_to_STL(stl_dir):
-    odb_location = rf"{case_folder}\{odb_name}"
-    session.viewports['Viewport: 1'].animationController.setValues(
-        animationType=NONE)
-    session.viewports['Viewport: 1'].animationController.setValues(
-        animationType=TIME_HISTORY)
-    session.viewports['Viewport: 1'].animationController.play(
-        duration=UNLIMITED)
-    session.viewports['Viewport: 1'].animationController.stop()
-    session.viewports['Viewport: 1'].animationController.showLastFrame()
-    session.viewports['Viewport: 1'].view.setValues(session.views['Back'])
-    session.viewports['Viewport: 1'].view.setValues(nearPlane=47.4824, 
-        farPlane=80.365, width=15.4369, height=7.02444, viewOffsetX=0.189971, 
-        viewOffsetY=-0.0747198)
-    session.linkedViewportCommands.setValues(_highlightLinkedViewports=True)
-    session.mdbData.summary()
-    odb = session.odbs[odb_location]
-    session.viewports['Viewport: 1'].setValues(displayedObject=odb)
-    leaf = dgo.LeafFromElementSets(elementSets=("ARTERY-1.SET-ALL", 
-        "STENT-1.SET-ALL", ))
-    session.viewports['Viewport: 1'].odbDisplay.displayGroup.replace(leaf=leaf)
-
-    import stlExport_kernel
-    stlExport_kernel.STLExport(moduleName='Visualization', 
-        stlFileName=stl_dir, 
-        stlFileType='ASCII')
-def diameter(step, case_folder):
-# --- Load node coordinates ---
+def radial_recoil(case_folder):
+    # --- Load node coordinates ---
     import pandas as pd
     import numpy as np
-    if step == 'Step-EXP':
-        file_path = os.path.join(case_folder, 'UExp.csv')
-    elif step =='Step-REL2':
-        file_path = os.path.join(case_folder, 'URel.csv')
-    else: print('error')
+    exp_file_path = os.path.join(case_folder, 'UExp.csv')
+    rel_file_path = os.path.join(case_folder, 'URel.csv')
     
-    df = pd.read_csv(file_path)
-    df.columns = df.columns.str.strip()  # remove whitespace in headers
+    df_exp = pd.read_csv(exp_file_path)
+    df_exp.columns = df_exp.columns.str.strip()  # remove whitespace in headers
+    df_rel = pd.read_csv(rel_file_path)
+    df_rel.columns = df_rel.columns.str.strip()  # remove whitespace in headers
 
     # Keep numeric coordinates only
     for col in ['X', 'Y', 'Z']:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-    df = df.dropna(subset=['X','Y','Z'])
-    
-    # --- Split DataFrame by Step ---
-    steps = df['Step'].unique()
+        df_exp[col] = pd.to_numeric(df_exp[col], errors='coerce')
+        df_rel[col] = pd.to_numeric(df_rel[col], errors='coerce')
+    #df_exp = df_exp.dropna(subset=['X','Y','Z'])
     
     # Approximate cylinder axis
-    x =(df['X']+ df['U-U1'])
-    y= (df['Y']+ df['U-U2'])
-    x_center = x.mean()
-    y_center =y.mean()
-    
+    x_exp =(df_exp['X']+ df_exp['U-U1'])
+    y_exp= (df_exp['Y']+ df_exp['U-U2'])
+    x_rel =(df_rel['X']+ df_rel['U-U1'])
+    y_rel= (df_rel['Y']+ df_rel['U-U2'])
+    node_label = df_exp['Node Label']
+    x_exp_center = x_exp.mean()
+    y_exp_center =y_exp.mean()
+    x_rel_center = x_rel.mean()
+    y_rel_center =y_rel.mean()
     # Compute radial distances
-    radii = np.sqrt((x - x_center)**2 + (y - y_center)**2)
+    radii_exp = np.sqrt((x_exp - x_exp_center)**2 + (y_exp - y_exp_center)**2)
+    node_label = node_label[radii_exp<1.66]
+    radii_exp = radii_exp[radii_exp<1.66]
 
+    #no here i want to make a subset of df_rel that only gets the data witht he node labels i want
+    df_rel = df_rel[df_rel['Node Label'].isin(node_label)]
+    x_rel =(df_rel['X']+ df_rel['U-U1'])
+    y_rel= (df_rel['Y']+ df_rel['U-U2'])
+    radii_rel = np.sqrt((x_rel - x_rel_center)**2 + (y_rel - y_rel_center)**2)
     # External diameter
-    external_diameter = 2 * radii.max()
-    diameter = external_diameter
-    #print(f"{step}: Approx. external diameter = {external_diameter:.8f} units")
+    # This is not correct because it just gets the maximum value of all the radii. But i want to be able to approximate my stent as two parallel cylinders. get the raddii of both of these cylinders
+    d_exp = 2 * radii_exp.mean()
+    d_rel = 2 * radii_rel.mean()
+    print(f"d exp = {d_exp:.4f}\nd rel = {d_rel:.4f}\nRR relative  = {100*(d_exp-d_rel)/d_exp:.2f}%")
 
-    return diameter
-def RR_Diameter(case_folder):
-    d_exp = diameter('Step-EXP', case_folder)
-    d_rel = diameter('Step-REL2', case_folder)
-    d_shrinkage =d_exp-d_rel
-    #print(case_folder)
-    #print(f'Diameter Shrinkage = {d_shrinkage}')
-    return d_shrinkage
+    return 100*(d_exp-d_rel)/d_exp
 
 def main(case_folder,odb_name,stl_dir):
     importODB(case_folder,odb_name) 

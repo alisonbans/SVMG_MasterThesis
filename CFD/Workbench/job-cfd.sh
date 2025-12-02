@@ -2,7 +2,7 @@
  
 #PBS -q normal
 #PBS -l ncpus=48
-#PBS -l walltime=10:00:00
+#PBS -l walltime=05:00:00
 #PBS -l mem=190GB
 #PBS -l jobfs=300GB
 #PBS -l software=unsw_ansys

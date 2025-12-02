@@ -57,6 +57,6 @@ def lhs(N):
                 ax.set_xlabel(var_names[j])
 
     fig.suptitle('Pairwise Scatter Plots of Design Space', fontsize=16)
-    plt.tight_layout()
-    plt.show()
-    plt.close()
+    fig.savefig('design_space_pairwise.png', dpi=200, bbox_inches='tight')
+    #plt.show()
+    plt.close(fig)

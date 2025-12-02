@@ -442,7 +442,7 @@ def CylinderExpansion(stent_location, job_name, job_name_full):
     mdb.close()
     mdb.ModelFromInputFile(name=job_name, inputFileName=os.path.join(os.getcwd(), f"{job_name}.inp"))
     del mdb.models['Model-1']
-    cyl_exp_addons(job_name, 1e-06)
+    cyl_exp_addons(job_name)
     mdb.Job(name=job_name_full, model=job_name, description='', type=ANALYSIS, 
         atTime=None, waitMinutes=0, waitHours=0, queue=None, memory=90, 
         memoryUnits=PERCENTAGE, getMemoryFromAnalysis=True, 

@@ -12,7 +12,7 @@ def template(template,stent_location):
     mdb.models['Model-1'].PartFromGeometryFile(name='STENT', geometryFile=step, 
         combine=False, dimensionality=THREE_D, type=DEFORMABLE_BODY)
     p = mdb.models['Model-1'].parts['STENT']
-    s = p.faces
+    r"""s = p.faces
     side1Faces = s.getSequenceFromMask(mask=('[#100 ]', ), )
     p.Surface(side1Faces=side1Faces, name='SURF-OUT')
     side1Faces = s.getSequenceFromMask(mask=('[#800 ]', ), )
@@ -37,7 +37,7 @@ def template(template,stent_location):
     a = mdb.models['Model-1'].rootAssembly
     f11 = a.instances['STENT-1'].faces
     f12 = a.instances['CYL-EXP-1'].faces
-    a.Coaxial(movableAxis=f11[8], fixedAxis=f12[0], flip=OFF)
+    a.Coaxial(movableAxis=f11[8], fixedAxis=f12[0], flip=OFF)"""
 
 if __name__ == "__main__":
     input = str(sys.argv[-1])
