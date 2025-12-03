@@ -14,7 +14,7 @@ from CFD.Workbench.PostProcExe import main_wb_pp
 from Design.LHS import lhs
 """
 Author:             Alison Bans 
-Last update:        24 November 2025
+Last update:        3 December 2025
 Code description:   This code is the entire loop allowing for optimisation 
 """
 # ------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ wb_folder = r'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench'
 wb_results = os.path.join(wb_folder, 'Results')
 design_space_csv = r"C:\Users\z5713258\SVMG_MasterThesis\DesignSpace.csv"
 design = [19, 0.46, 18, 0.95, 0.1, 1.63339, 0.39003, 0.75959, 0.81258, 1.31384, 0.04872, 0.00164, 0.07540, 0.61571, 4.16285, 1.79921, 0.06, 0.06]
-N = 10
+N = 100
 
 # ------------------------------------------------------------------------------------------------
 # 1. LATIN HYPERCUBE SAMPLING --------------------------------------------------------------------
@@ -52,13 +52,10 @@ if not os.path.isfile(design_space_csv):
     lhs(N)
 
 # ------------------------------------------------------------------------------------------------
-# 2. FREE EXPANSION ------------------------------------------------------------------------------
+# 2. GENERATE THE COMPUTER AIDED DESIGN ----------------------------------------------------------
 # ------------------------------------------------------------------------------------------------
-r"""design_space = pd.read_csv(design_space_csv)
+design_space = pd.read_csv(design_space_csv)
 for design_nb in range(0,N):
-    # -------------------------------------------------------------------------------------------
-    # 2.1 GENERATE THE COMPUTER AIDED DESIGN ----------------------------------------------------
-    # -------------------------------------------------------------------------------------------
     NUS = design_space['NUS'].iloc[design_nb]
     SW = design_space['SW'].iloc[design_nb]
     ST = design_space['ST'].iloc[design_nb]
@@ -82,15 +79,22 @@ for design_nb in range(0,N):
     design_space.loc[design_nb, 'DesignLabel'] = status
     if status == 0:
         continue
-    
-    if design_space['DesignLabel'].iloc[design_nb] ==0:
-        continue
+
     step = f'stent_{case}.STEP'
     print(step)
     step_1 = os.path.join(matlab_folder_HS1_results, step)
     step_2 = os.path.join(step_folder, step)
     shutil.move(step_1, step_2)
-    
+# ------------------------------------------------------------------------------------------------
+# 2. GENERATE THE COMPUTER AIDED DESIGN ----------------------------------------------------------
+# ------------------------------------------------------------------------------------------------ 
+for design_nb in range(0,N):
+    if design_space['DesignLabel'].iloc[design_nb] ==0:
+        continue
+    NUS = design_space['NUS'].iloc[design_nb]
+    SW = design_space['SW'].iloc[design_nb]
+    ST = design_space['ST'].iloc[design_nb]
+    case = f'NUS{NUS}_SW{SW}_ST{ST}'
     # -------------------------------------------------------------------------------------------
     # 2.2 CREATE THE STENT MESH, SETS & SURFACES ------------------------------------------------
     # -------------------------------------------------------------------------------------------
@@ -151,6 +155,11 @@ for design_nb in range(0,N):
     case_folder = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\FreeExpansion\Results\{case}"
     os.makedirs(case_folder, exist_ok=True)
     odb_name = f'FreeExpFull_{case}.odb'
+    while not os.path.exists(os.path.join(FreeExp_results,odb_name)): 
+        print(f"Free expansion ODB for {case} cannot be found")
+        answer = input("Press enter when it is available \nTo force exit this loop type: out ... ")
+        if answer.strip().lower() == 'out':
+            break
     command4 = f'abaqus cae script="{fe_pp}" -- "{case_folder},{odb_name}"'
     proc4 = subprocess.Popen(command4, shell=True, cwd=working_dir_fea)
     proc4.wait()
@@ -179,15 +188,15 @@ for design_nb in range(0,N):
     with open(target_sh, 'w', newline='\n') as file:
         file.write(content)
 
-design_space.to_csv(design_space_csv, index=False)"""
+design_space.to_csv(design_space_csv, index=False)
 design_space = pd.read_csv(design_space_csv)
-#design_space['EnergyRatioCE'] = np.nan
-#design_space['RRabs'] = np.nan
+design_space['EnergyRatioCE'] = np.nan
+design_space['RadialRecoil'] = np.nan
 input("Press enter when cylinder expansion odb files are available ...")
 # ------------------------------------------------------------------------------------------------
 # 4. CARRY OUT POST-PROCESSING OF THE FEA AND PREPARE CFD FILES ----------------------------------
 # ------------------------------------------------------------------------------------------------
-for design_nb in range(4,N):
+for design_nb in range(0,N):
     if design_space['DesignLabel'].iloc[design_nb] ==0:
         continue
     NUS = design_space['NUS'].iloc[design_nb]
@@ -201,13 +210,20 @@ for design_nb in range(4,N):
     case_folder = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}"
     os.makedirs(case_folder, exist_ok=True)
     odb_name = f'CylExpFull_{case}.odb'
-    
+    while not os.path.exists(os.path.join(CylExp_folder, 'Results', odb_name)):
+        input(f"CE ODB file for {case} cannot be found ...")
+        answer = input("Press enter when it is available \nTo force exit this loop type: out ... ")
+        if answer.strip().lower() == 'out':
+            break
     stl_file = rf"C:\Users\z5713258\SVMG_MasterThesis\FEA\CylExpansion\Results\{case}\{case}.stl"
-    r"""command4 = f'abaqus cae script="{ce_pp}" -- "{case_folder},{odb_name},{stl_file}"'
+    command4 = f'abaqus cae script="{ce_pp}" -- "{case_folder},{odb_name},{stl_file}"'
     proc4 = subprocess.Popen(command4, shell=True, cwd=working_dir_fea)
     proc4.wait()
-    while not os.path.isfile(stl_file):
-        input("STL file does not exist ...")
+    while not os.path.exists(stl_file):
+        input(f"STL file for {case} cannot be found ...")
+        answer = input("Press enter when it is available \nTo force exit this loop type: out ... ")
+        if answer.strip().lower() == 'out':
+            break
     rr_abs = radial_recoil(case_folder)
     df = pd.read_csv(os.path.join(case_folder, 'StentEnergyRatio.csv'),sep=r"\s+")
     df['StentEnergyRatio'] = pd.to_numeric(df['StentEnergyRatio'], errors='coerce')
@@ -215,13 +231,19 @@ for design_nb in range(4,N):
     df_exp = df[(df['X'] > 0.5) & (df['X'] < 1)]
     max_ratio_exp = df_exp['StentEnergyRatio'].max()
     design_space.loc[design_nb,'EnergyRatioCE'] = round(max_ratio_exp, 2) 
-    design_space.loc[design_nb,'RRabs'] = round(rr_abs,3)
-    design_space.to_csv(design_space_csv, index=False)"""
+    design_space.loc[design_nb,'RadialRecoil'] = round(rr_abs,3)
+    design_space.to_csv(design_space_csv, index=False)
     # --------------------------------------------------------------------------------------------
     # 4.2 RUN BLENDER, FLUENT & WORKBENCH --------------------------------------------------------
     # --------------------------------------------------------------------------------------------
     input("Press enter when blender model has been created ...")
-    run_in_blender(case,  rf'C:/Users/z5713258/SVMG_MasterThesis/CFD/Blender/{case}.blend') 
+    blend_file = rf'C:/Users/z5713258/SVMG_MasterThesis/CFD/Blender/{case}.blend'
+    while not os.path.exists(blend_file):
+        input(f"Blender file for {case} cannot be found ...")
+        answer = input("Press enter when it is available \nTo force exit this loop type: out ... ")
+        if answer.strip().lower() == 'out':
+            break
+    run_in_blender(case,  blend_file) 
     input("Press enter once the blender part is checked ....")
     main_fluent(case)
     input("Check mesh and press enter when done ...")
@@ -250,10 +272,24 @@ for design_nb in range(0,N):
     old_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}.wbpj"
     new_wbpj = rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp.wbpj"
     res = rf'C:\\Users\\z5713258\\SVMG_MasterThesis\\CFD\Workbench\\Results\\{case}\\TRANS2_001.res'
+    while not os.path.exists(res):
+        input(f"CFD result file for {case} cannot be found ...")
+        answer = input("Press enter when it is available \nTo force exit this loop type: out ... ")
+        if answer.strip().lower() == 'out':
+            break
     main_wb_pp(old_wbpj, new_wbpj, res)
     shutil.move(new_wbpj, rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
     shutil.move(rf"C:/Users/z5713258/SVMG_MasterThesis/CFD/Workbench/WorkingDirectory/{case}_pp_files", rf'C:/Users/z5713258/SVMG_MasterThesis/CFD\Workbench/Results/{case}')
-    lowESS = float(input(f"Write down the area of low ESS for {case}: "))
+    
+    while True:
+        user_input = input(f"Write down the area of low ESS for {case}: ").strip()
+        try:
+            lowESS = float(user_input)
+            break
+        except ValueError:
+            print("Invalid input. Please enter a numeric value (e.g., 12.5).")
+
+    #lowESS = float(input(f"Write down the area of low ESS for {case}: "))
     design_space.loc[design_nb,'lowESSpercentArea'] = lowESS
 
 design_space.to_csv(design_space_csv, index=False)
