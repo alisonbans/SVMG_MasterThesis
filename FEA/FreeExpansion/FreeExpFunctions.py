@@ -73,7 +73,7 @@ def FreeExp_AddOns(model):
     # Define the expansion and release steps 
     mdb.models[model].ExplicitDynamicsStep(name='Step-EXP', previous='Initial', 
         timePeriod=0.3, improvedDtMethod=ON)
-    mdb.models[model].steps['Step-EXP'].setValues(timePeriod=0.3, massScaling=(
+    mdb.models[model].steps['Step-EXP'].setValues(timePeriod=0.4, massScaling=(
         (SEMI_AUTOMATIC, MODEL, THROUGHOUT_STEP, 0.0, 1e-06, BELOW_MIN, 1, 0, 
         0.0, 0.0, 0, None), ), improvedDtMethod=ON)
     mdb.models[model].ExplicitDynamicsStep(name='Step-REL', previous='Step-EXP', 
@@ -101,7 +101,7 @@ def FreeExp_AddOns(model):
     mdb.models[model].interactions['CYL-STENT'].includedPairs.setValuesInStep(
         stepName='Step-REL', removePairs=((r11, r12), ))
     mdb.models[model].SmoothStepAmplitude(name='AMP-FREE-EXP', timeSpan=TOTAL, 
-        data=((0.0, 0.0), (0.3, 1.0), (0.35, 1.0)))
+        data=((0.0, 0.0), (0.4, 1.0), (0.45, 1.0)))
     # Define element type 
     p = mdb.models[model].parts['CYL-EXP']
     elemType1 = mesh.ElemType(elemCode=SFM3D4R, elemLibrary=EXPLICIT)
